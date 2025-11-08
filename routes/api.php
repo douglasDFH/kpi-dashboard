@@ -11,10 +11,22 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 // Equipment routes
-Route::apiResource('equipment', EquipmentController::class);
+Route::apiResource('equipment', EquipmentController::class)->names([
+    'index' => 'api.equipment.index',
+    'store' => 'api.equipment.store',
+    'show' => 'api.equipment.show',
+    'update' => 'api.equipment.update',
+    'destroy' => 'api.equipment.destroy',
+]);
 
 // Production Data routes
-Route::apiResource('production-data', ProductionDataController::class);
+Route::apiResource('production-data', ProductionDataController::class)->names([
+    'index' => 'api.production-data.index',
+    'store' => 'api.production-data.store',
+    'show' => 'api.production-data.show',
+    'update' => 'api.production-data.update',
+    'destroy' => 'api.production-data.destroy',
+]);
 
 // KPI routes
 Route::prefix('kpi')->group(function () {

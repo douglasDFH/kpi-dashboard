@@ -1,0 +1,255 @@
+<mxfile host="65bd71144e">
+    <diagram id="KPI-Dashboard-Class-Diagram" name="Class Diagram">
+        <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="2339" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+
+                <!-- Equipment Class -->
+                <mxCell id="Equipment" value="Equipment" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+                    <mxGeometry x="40" y="40" width="280" height="280" as="geometry"/>
+                </mxCell>
+                <mxCell id="Equipment-attrs" value="- id: int&#10;- name: string&#10;- code: string&#10;- type: string&#10;- location: string&#10;- is_active: boolean&#10;- created_at: timestamp&#10;- updated_at: timestamp" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="Equipment">
+                    <mxGeometry y="26" width="280" height="124" as="geometry"/>
+                </mxCell>
+                <mxCell id="Equipment-line" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" vertex="1" parent="Equipment">
+                    <mxGeometry y="150" width="280" height="8" as="geometry"/>
+                </mxCell>
+                <mxCell id="Equipment-methods" value="+ productionData(): HasMany&#10;+ qualityData(): HasMany&#10;+ downtimeData(): HasMany&#10;&#10;&lt;&lt;fillable&gt;&gt;&#10;name, code, type, location, is_active&#10;&#10;&lt;&lt;casts&gt;&gt;&#10;is_active: boolean" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="Equipment">
+                    <mxGeometry y="158" width="280" height="122" as="geometry"/>
+                </mxCell>
+
+                <!-- ProductionData Class -->
+                <mxCell id="ProductionData" value="ProductionData" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+                    <mxGeometry x="400" y="40" width="320" height="380" as="geometry"/>
+                </mxCell>
+                <mxCell id="ProductionData-attrs" value="- id: int&#10;- equipment_id: int (FK)&#10;- planned_production: int&#10;- actual_production: int&#10;- good_units: int&#10;- defective_units: int&#10;- cycle_time: decimal&#10;- production_date: datetime&#10;- created_at: timestamp&#10;- updated_at: timestamp" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="ProductionData">
+                    <mxGeometry y="26" width="320" height="154" as="geometry"/>
+                </mxCell>
+                <mxCell id="ProductionData-line" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" vertex="1" parent="ProductionData">
+                    <mxGeometry y="180" width="320" height="8" as="geometry"/>
+                </mxCell>
+                <mxCell id="ProductionData-methods" value="+ equipment(): BelongsTo&#10;+ getEfficiencyAttribute(): float&#10;+ getQualityRateAttribute(): float&#10;&#10;&lt;&lt;fillable&gt;&gt;&#10;equipment_id, planned_production,&#10;actual_production, good_units,&#10;defective_units, cycle_time, production_date&#10;&#10;&lt;&lt;casts&gt;&gt;&#10;production_date: datetime&#10;cycle_time: decimal:2" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="ProductionData">
+                    <mxGeometry y="188" width="320" height="192" as="geometry"/>
+                </mxCell>
+
+                <!-- QualityData Class -->
+                <mxCell id="QualityData" value="QualityData" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+                    <mxGeometry x="800" y="40" width="320" height="380" as="geometry"/>
+                </mxCell>
+                <mxCell id="QualityData-attrs" value="- id: int&#10;- equipment_id: int (FK)&#10;- total_inspected: int&#10;- approved_units: int&#10;- rejected_units: int&#10;- defect_type: string&#10;- notes: text&#10;- inspection_date: datetime&#10;- created_at: timestamp&#10;- updated_at: timestamp" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="QualityData">
+                    <mxGeometry y="26" width="320" height="154" as="geometry"/>
+                </mxCell>
+                <mxCell id="QualityData-line" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" vertex="1" parent="QualityData">
+                    <mxGeometry y="180" width="320" height="8" as="geometry"/>
+                </mxCell>
+                <mxCell id="QualityData-methods" value="+ equipment(): BelongsTo&#10;+ getQualityPercentageAttribute(): float&#10;+ getRejectRateAttribute(): float&#10;&#10;&lt;&lt;fillable&gt;&gt;&#10;equipment_id, total_inspected,&#10;approved_units, rejected_units,&#10;defect_type, notes, inspection_date&#10;&#10;&lt;&lt;casts&gt;&gt;&#10;inspection_date: datetime" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="QualityData">
+                    <mxGeometry y="188" width="320" height="192" as="geometry"/>
+                </mxCell>
+
+                <!-- DowntimeData Class -->
+                <mxCell id="DowntimeData" value="DowntimeData" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+                    <mxGeometry x="1200" y="40" width="320" height="360" as="geometry"/>
+                </mxCell>
+                <mxCell id="DowntimeData-attrs" value="- id: int&#10;- equipment_id: int (FK)&#10;- start_time: datetime&#10;- end_time: datetime&#10;- duration_minutes: int&#10;- reason: string&#10;- category: string&#10;- description: text&#10;- created_at: timestamp&#10;- updated_at: timestamp" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="DowntimeData">
+                    <mxGeometry y="26" width="320" height="154" as="geometry"/>
+                </mxCell>
+                <mxCell id="DowntimeData-line" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" vertex="1" parent="DowntimeData">
+                    <mxGeometry y="180" width="320" height="8" as="geometry"/>
+                </mxCell>
+                <mxCell id="DowntimeData-methods" value="+ equipment(): BelongsTo&#10;# booted(): void&#10;&#10;&lt;&lt;fillable&gt;&gt;&#10;equipment_id, start_time, end_time,&#10;duration_minutes, reason, category,&#10;description&#10;&#10;&lt;&lt;casts&gt;&gt;&#10;start_time: datetime&#10;end_time: datetime" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="DowntimeData">
+                    <mxGeometry y="188" width="320" height="172" as="geometry"/>
+                </mxCell>
+
+                <!-- User Class -->
+                <mxCell id="User" value="User" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+                    <mxGeometry x="40" y="480" width="280" height="260" as="geometry"/>
+                </mxCell>
+                <mxCell id="User-attrs" value="- id: int&#10;- name: string&#10;- email: string&#10;- email_verified_at: datetime&#10;- password: string&#10;- remember_token: string&#10;- created_at: timestamp&#10;- updated_at: timestamp" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="User">
+                    <mxGeometry y="26" width="280" height="124" as="geometry"/>
+                </mxCell>
+                <mxCell id="User-line" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" vertex="1" parent="User">
+                    <mxGeometry y="150" width="280" height="8" as="geometry"/>
+                </mxCell>
+                <mxCell id="User-methods" value="&lt;&lt;traits&gt;&gt;&#10;HasFactory, Notifiable&#10;&#10;&lt;&lt;fillable&gt;&gt;&#10;name, email, password&#10;&#10;&lt;&lt;hidden&gt;&gt;&#10;password, remember_token" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="User">
+                    <mxGeometry y="158" width="280" height="102" as="geometry"/>
+                </mxCell>
+
+                <!-- KpiService Class -->
+                <mxCell id="KpiService" value="«service»&#10;KpiService" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+                    <mxGeometry x="400" y="480" width="400" height="340" as="geometry"/>
+                </mxCell>
+                <mxCell id="KpiService-attrs" value="" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="KpiService">
+                    <mxGeometry y="40" width="400" height="4" as="geometry"/>
+                </mxCell>
+                <mxCell id="KpiService-line" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" vertex="1" parent="KpiService">
+                    <mxGeometry y="44" width="400" height="8" as="geometry"/>
+                </mxCell>
+                <mxCell id="KpiService-methods" value="+ calculateOEE(equipmentId: int, startDate: Carbon,&#10;    endDate: Carbon): array&#10;+ calculateAvailability(equipmentId: int, startDate: Carbon,&#10;    endDate: Carbon): float&#10;+ calculatePerformance(equipmentId: int, startDate: Carbon,&#10;    endDate: Carbon): float&#10;+ calculateQuality(equipmentId: int, startDate: Carbon,&#10;    endDate: Carbon): float&#10;+ getAllEquipmentKPIs(startDate: Carbon,&#10;    endDate: Carbon): array&#10;+ calculateAdditionalMetrics(equipmentId: int,&#10;    startDate: Carbon, endDate: Carbon): array&#10;&#10;&lt;&lt;returns&gt;&gt;&#10;OEE = Availability × Performance × Quality" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="KpiService">
+                    <mxGeometry y="52" width="400" height="288" as="geometry"/>
+                </mxCell>
+
+                <!-- KpiController Class -->
+                <mxCell id="KpiController" value="«controller»&#10;KpiController" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+                    <mxGeometry x="880" y="480" width="400" height="280" as="geometry"/>
+                </mxCell>
+                <mxCell id="KpiController-attrs" value="- kpiService: KpiService" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="KpiController">
+                    <mxGeometry y="40" width="400" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="KpiController-line" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" vertex="1" parent="KpiController">
+                    <mxGeometry y="66" width="400" height="8" as="geometry"/>
+                </mxCell>
+                <mxCell id="KpiController-methods" value="+ __construct(kpiService: KpiService)&#10;+ index(request: Request): JsonResponse&#10;+ show(request: Request, equipmentId: int): JsonResponse&#10;+ availability(request: Request, equipmentId: int): JsonResponse&#10;+ performance(request: Request, equipmentId: int): JsonResponse&#10;+ quality(request: Request, equipmentId: int): JsonResponse&#10;&#10;&lt;&lt;routes&gt;&gt;&#10;GET /api/kpi&#10;GET /api/kpi/{equipmentId}&#10;GET /api/kpi/{equipmentId}/availability&#10;GET /api/kpi/{equipmentId}/performance&#10;GET /api/kpi/{equipmentId}/quality" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="KpiController">
+                    <mxGeometry y="74" width="400" height="206" as="geometry"/>
+                </mxCell>
+
+                <!-- LoginController Class -->
+                <mxCell id="LoginController" value="«controller»&#10;LoginController" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+                    <mxGeometry x="1340" y="480" width="320" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="LoginController-attrs" value="" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="LoginController">
+                    <mxGeometry y="40" width="320" height="4" as="geometry"/>
+                </mxCell>
+                <mxCell id="LoginController-line" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" vertex="1" parent="LoginController">
+                    <mxGeometry y="44" width="320" height="8" as="geometry"/>
+                </mxCell>
+                <mxCell id="LoginController-methods" value="+ showLoginForm(): View&#10;+ login(request: Request): RedirectResponse&#10;+ logout(request: Request): RedirectResponse&#10;&#10;&lt;&lt;routes&gt;&gt;&#10;GET /login&#10;POST /login&#10;POST /logout" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="LoginController">
+                    <mxGeometry y="52" width="320" height="148" as="geometry"/>
+                </mxCell>
+
+                <!-- Relationships -->
+
+                <!-- Equipment -> ProductionData (1 to many) -->
+                <mxCell id="rel1" value="" style="endArrow=diamondThin;endFill=0;endSize=24;html=1;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" edge="1" parent="1" source="Equipment" target="ProductionData">
+                    <mxGeometry width="160" relative="1" as="geometry">
+                        <mxPoint x="330" y="200" as="sourcePoint"/>
+                        <mxPoint x="490" y="200" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="rel1-label" value="1" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;" vertex="1" parent="1">
+                    <mxGeometry x="320" y="90" width="30" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="rel1-label2" value="*" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;" vertex="1" parent="1">
+                    <mxGeometry x="365" y="90" width="30" height="30" as="geometry"/>
+                </mxCell>
+
+                <!-- Equipment -> QualityData (1 to many) -->
+                <mxCell id="rel2" value="" style="endArrow=diamondThin;endFill=0;endSize=24;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" edge="1" parent="1" source="Equipment" target="QualityData">
+                    <mxGeometry width="160" relative="1" as="geometry">
+                        <mxPoint x="330" y="200" as="sourcePoint"/>
+                        <mxPoint x="490" y="200" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="360" y="200"/>
+                            <mxPoint x="360" y="110"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="rel2-label" value="1" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;" vertex="1" parent="1">
+                    <mxGeometry x="320" y="170" width="30" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="rel2-label2" value="*" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;" vertex="1" parent="1">
+                    <mxGeometry x="765" y="80" width="30" height="30" as="geometry"/>
+                </mxCell>
+
+                <!-- Equipment -> DowntimeData (1 to many) -->
+                <mxCell id="rel3" value="" style="endArrow=diamondThin;endFill=0;endSize=24;html=1;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" edge="1" parent="1" source="Equipment" target="DowntimeData">
+                    <mxGeometry width="160" relative="1" as="geometry">
+                        <mxPoint x="330" y="280" as="sourcePoint"/>
+                        <mxPoint x="490" y="280" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="360" y="280"/>
+                            <mxPoint x="360" y="450"/>
+                            <mxPoint x="1160" y="450"/>
+                            <mxPoint x="1160" y="110"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="rel3-label" value="1" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;" vertex="1" parent="1">
+                    <mxGeometry x="320" y="250" width="30" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="rel3-label2" value="*" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;" vertex="1" parent="1">
+                    <mxGeometry x="1165" y="80" width="30" height="30" as="geometry"/>
+                </mxCell>
+
+                <!-- KpiService uses Equipment -->
+                <mxCell id="rel4" value="uses" style="endArrow=open;endFill=0;dashed=1;html=1;exitX=0;exitY=0.25;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="KpiService" target="Equipment">
+                    <mxGeometry width="160" relative="1" as="geometry">
+                        <mxPoint x="330" y="500" as="sourcePoint"/>
+                        <mxPoint x="490" y="500" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="180" y="565"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+
+                <!-- KpiService uses ProductionData -->
+                <mxCell id="rel5" value="uses" style="endArrow=open;endFill=0;dashed=1;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="KpiService" target="ProductionData">
+                    <mxGeometry width="160" relative="1" as="geometry">
+                        <mxPoint x="500" y="460" as="sourcePoint"/>
+                        <mxPoint x="660" y="460" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+
+                <!-- KpiService uses QualityData -->
+                <mxCell id="rel6" value="uses" style="endArrow=open;endFill=0;dashed=1;html=1;exitX=0.75;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="KpiService" target="QualityData">
+                    <mxGeometry width="160" relative="1" as="geometry">
+                        <mxPoint x="700" y="460" as="sourcePoint"/>
+                        <mxPoint x="860" y="460" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="700" y="450"/>
+                            <mxPoint x="960" y="450"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+
+                <!-- KpiService uses DowntimeData -->
+                <mxCell id="rel7" value="uses" style="endArrow=open;endFill=0;dashed=1;html=1;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="KpiService" target="DowntimeData">
+                    <mxGeometry width="160" relative="1" as="geometry">
+                        <mxPoint x="900" y="500" as="sourcePoint"/>
+                        <mxPoint x="1060" y="500" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="1360" y="565"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+
+                <!-- KpiController uses KpiService -->
+                <mxCell id="rel8" value="dependency injection" style="endArrow=open;endFill=1;html=1;exitX=0;exitY=0.25;exitDx=0;exitDy=0;entryX=1;entryY=0.25;entryDx=0;entryDy=0;" edge="1" parent="1" source="KpiController" target="KpiService">
+                    <mxGeometry width="160" relative="1" as="geometry">
+                        <mxPoint x="700" y="600" as="sourcePoint"/>
+                        <mxPoint x="860" y="600" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+
+                <!-- Title -->
+                <mxCell id="title" value="KPI Dashboard - Diagrama de Clases" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=24;fontStyle=1" vertex="1" parent="1">
+                    <mxGeometry x="600" y="880" width="400" height="40" as="geometry"/>
+                </mxCell>
+
+                <!-- Legend -->
+                <mxCell id="legend-box" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+                    <mxGeometry x="40" y="880" width="480" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend-title" value="Leyenda" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1" vertex="1" parent="1">
+                    <mxGeometry x="60" y="900" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend-1" value="Models (Eloquent ORM)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+                    <mxGeometry x="60" y="940" width="180" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend-2" value="Controllers (API/Web)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+                    <mxGeometry x="260" y="940" width="180" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend-3" value="Services (Business Logic)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+                    <mxGeometry x="60" y="980" width="180" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend-4" value="Authentication" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+                    <mxGeometry x="260" y="980" width="180" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend-5" value="Relaciones:&#10;→ HasMany/BelongsTo (sólido)&#10;⇢ Uses/Dependency (punteado)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="60" y="1020" width="380" height="50" as="geometry"/>
+                </mxCell>
+
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
