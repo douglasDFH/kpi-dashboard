@@ -135,21 +135,26 @@
                     </div>
                 </a>
 
-                <!-- Custom Report Card (Placeholder) -->
-                <div class="bg-gray-50 rounded-lg shadow-md p-6 border-2 border-dashed border-gray-300">
-                    <div class="flex items-start opacity-50">
-                        <div class="p-3 rounded-lg bg-gray-200 text-gray-400">
+                <!-- Custom Report Card -->
+                <a href="{{ route('reports.custom') }}" class="bg-white rounded-lg shadow-md hover:shadow-xl transition p-6 group border-2 border-indigo-200">
+                    <div class="flex items-start">
+                        <div class="p-3 rounded-lg bg-indigo-100 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition">
                             <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
                             </svg>
                         </div>
                         <div class="ml-4 flex-1">
-                            <h3 class="text-lg font-semibold text-gray-600">Reportes Personalizados</h3>
-                            <p class="text-sm text-gray-500 mt-1">Próximamente</p>
-                            <p class="text-xs text-gray-400 mt-3">Creación de reportes personalizados con filtros avanzados y exportación</p>
+                            <h3 class="text-lg font-semibold text-gray-800 group-hover:text-indigo-600 transition">Reportes Personalizados</h3>
+                            <p class="text-sm text-gray-600 mt-1">Constructor avanzado de reportes</p>
+                            <ul class="mt-3 text-xs text-gray-500 space-y-1">
+                                <li>• Filtros avanzados y métricas</li>
+                                <li>• Múltiples equipos y períodos</li>
+                                <li>• Exportación a PDF/Excel</li>
+                            </ul>
+                            <span class="inline-block mt-2 px-2 py-1 bg-indigo-100 text-indigo-600 text-xs font-semibold rounded">¡Nuevo!</span>
                         </div>
                     </div>
-                </div>
+                </a>
             </div>
 
             <!-- Info Box -->

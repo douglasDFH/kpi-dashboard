@@ -238,4 +238,127 @@ class ReportController extends Controller
 
         return view('reports.comparative', compact('comparativeData', 'equipment', 'startDate', 'endDate'));
     }
+
+    /**
+     * Display custom report builder
+     */
+    public function custom()
+    {
+        $equipment = Equipment::where('is_active', true)->get();
+        return view('reports.custom', compact('equipment'));
+    }
+
+    /**
+     * Generate custom report based on user selections
+     */
+    public function generateCustomReport(Request $request)
+    {
+        $validated = $request->validate([
+            'equipment_ids' => 'required|array|min:1',
+            'equipment_ids.*' => 'exists:equipment,id',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'metrics' => 'required|array|min:1',
+            'metrics.*' => 'in:oee,production,quality,downtime',
+        ]);
+
+        $startDate = Carbon::parse($validated['start_date']);
+        $endDate = Carbon::parse($validated['end_date']);
+        $equipmentIds = $validated['equipment_ids'];
+        $metrics = $validated['metrics'];
+
+        $reportData = [];
+
+        foreach ($equipmentIds as $equipmentId) {
+            $equipment = Equipment::find($equipmentId);
+            $data = ['equipment' => $equipment];
+
+            // OEE Metrics
+            if (in_array('oee', $metrics)) {
+                $data['oee'] = $this->kpiService->calculateOEE($equipmentId, $startDate, $endDate);
+            }
+
+            // Production Metrics
+            if (in_array('production', $metrics)) {
+                $productionData = ProductionData::where('equipment_id', $equipmentId)
+                    ->whereBetween('production_date', [$startDate, $endDate])
+                    ->get();
+
+                $data['production'] = [
+                    'total_planned' => $productionData->sum('planned_production'),
+                    'total_actual' => $productionData->sum('actual_production'),
+                    'total_good' => $productionData->sum('good_units'),
+                    'total_defective' => $productionData->sum('defective_units'),
+                    'efficiency' => $productionData->sum('planned_production') > 0
+                        ? ($productionData->sum('actual_production') / $productionData->sum('planned_production')) * 100
+                        : 0,
+                    'records' => $productionData,
+                ];
+            }
+
+            // Quality Metrics
+            if (in_array('quality', $metrics)) {
+                $qualityData = QualityData::where('equipment_id', $equipmentId)
+                    ->whereBetween('inspection_date', [$startDate, $endDate])
+                    ->get();
+
+                $data['quality'] = [
+                    'total_inspected' => $qualityData->sum('total_inspected'),
+                    'total_approved' => $qualityData->sum('approved_units'),
+                    'total_rejected' => $qualityData->sum('rejected_units'),
+                    'quality_rate' => $qualityData->sum('total_inspected') > 0
+                        ? ($qualityData->sum('approved_units') / $qualityData->sum('total_inspected')) * 100
+                        : 0,
+                    'records' => $qualityData,
+                ];
+            }
+
+            // Downtime Metrics
+            if (in_array('downtime', $metrics)) {
+                $downtimeData = DowntimeData::where('equipment_id', $equipmentId)
+                    ->whereBetween('start_time', [$startDate, $endDate])
+                    ->get();
+
+                $data['downtime'] = [
+                    'total_minutes' => $downtimeData->sum('duration_minutes'),
+                    'total_hours' => round($downtimeData->sum('duration_minutes') / 60, 2),
+                    'planned' => $downtimeData->where('category', 'planificado')->sum('duration_minutes'),
+                    'unplanned' => $downtimeData->where('category', 'no planificado')->sum('duration_minutes'),
+                    'records' => $downtimeData,
+                ];
+            }
+
+            $reportData[] = $data;
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $reportData,
+            'period' => [
+                'start' => $startDate->format('d/m/Y'),
+                'end' => $endDate->format('d/m/Y'),
+            ],
+        ]);
+    }
+
+    /**
+     * Export custom report to PDF or Excel
+     */
+    public function exportCustomReport(Request $request)
+    {
+        $validated = $request->validate([
+            'format' => 'required|in:pdf,excel',
+            'report_data' => 'required|json',
+        ]);
+
+        // Para futuro: Implementar exportación con libraries como:
+        // - Laravel Excel (maatwebsite/excel) para Excel
+        // - DomPDF o Snappy para PDF
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Funcionalidad de exportación disponible próximamente',
+            'format' => $validated['format'],
+        ]);
+    }
 }

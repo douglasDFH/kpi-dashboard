@@ -36,4 +36,7 @@ Route::prefix('reports')->name('reports.')->group(function () {
     Route::get('/quality', [ReportController::class, 'quality'])->name('quality');
     Route::get('/downtime', [ReportController::class, 'downtime'])->name('downtime');
     Route::get('/comparative', [ReportController::class, 'comparative'])->name('comparative');
+    Route::get('/custom', [ReportController::class, 'custom'])->name('custom');
+    Route::post('/custom/generate', [ReportController::class, 'generateCustomReport'])->name('custom.generate');
+    Route::post('/custom/export', [ReportController::class, 'exportCustomReport'])->name('custom.export');
 });
