@@ -166,19 +166,19 @@
                                     <p class="text-xs text-gray-500 mt-1" id="reportGenerated"></p>
                                 </div>
                                 <div class="flex space-x-2">
-                                    <button id="exportPdfBtn" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition flex items-center">
+                                    <button id="exportPdfBtn" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg transition flex items-center shadow-md">
                                         <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                         </svg>
                                         PDF
                                     </button>
-                                    <button id="exportExcelBtn" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition flex items-center">
+                                    <button id="exportExcelBtn" class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-lg transition flex items-center shadow-md">
                                         <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                         </svg>
                                         CSV
                                     </button>
-                                    <button id="printBtn" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition flex items-center">
+                                    <button id="printBtn" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition flex items-center shadow-md">
                                         <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                                         </svg>
@@ -198,7 +198,7 @@
 
 <script>
     // CSRF Token Setup
-    axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
         // Select All Equipment
         document.getElementById('selectAllEquipment').addEventListener('click', function() {
@@ -246,10 +246,27 @@
 
             try {
                 const formData = new FormData(this);
-                const response = await axios.post('{{ route("reports.custom.generate") }}', formData);
+                
+                // Usar fetch en lugar de axios
+                const response = await fetch('{{ route("reports.custom.generate") }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                    },
+                    body: formData
+                });
 
-                if (response.data.success) {
-                    displayReport(response.data);
+                const data = await response.json();
+                console.log('Response received:', data);
+
+                if (data.success) {
+                    displayReport(data);
+                } else {
+                    console.error('Success flag is false:', data);
+                    alert('Error: El servidor no devolvió datos correctos');
+                    document.getElementById('loadingState').classList.add('hidden');
+                    document.getElementById('emptyState').classList.remove('hidden');
                 }
             } catch (error) {
                 console.error('Error:', error);
@@ -260,6 +277,7 @@
         });
 
         function displayReport(data) {
+            console.log('displayReport called with data:', data);
             document.getElementById('loadingState').classList.add('hidden');
             document.getElementById('resultsContainer').classList.remove('hidden');
 
