@@ -7,6 +7,8 @@ use App\Http\Controllers\ProductionDataController;
 use App\Http\Controllers\DowntimeDataController;
 use App\Http\Controllers\QualityDataController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\AuditLogController;
 
 // Redirect root to dashboard
 Route::get('/', function () {
@@ -40,3 +42,11 @@ Route::prefix('reports')->name('reports.')->group(function () {
     Route::post('/custom/generate', [ReportController::class, 'generateCustomReport'])->name('custom.generate');
     Route::post('/custom/export', [ReportController::class, 'exportCustomReport'])->name('custom.export');
 });
+
+// User Management Routes
+Route::resource('users', UserController::class);
+Route::post('users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggle-active');
+
+// Audit Log Routes
+Route::get('audit', [AuditLogController::class, 'index'])->name('audit.index');
+Route::get('audit/{auditLog}', [AuditLogController::class, 'show'])->name('audit.show');
