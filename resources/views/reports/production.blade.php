@@ -126,15 +126,7 @@
 
 <script>
     const ctx = document.getElementById('productionChart').getContext('2d');
-    const productionData = @json($productionData->map(function($prod) {
-        return [
-            'date' => $prod->production_date->format('d/m'),
-            'equipment' => $prod->equipment->name,
-            'planned' => $prod->planned_production,
-            'actual' => $prod->actual_production,
-            'good' => $prod->good_units
-        ];
-    }));
+    const productionData = @json($chartData);
 
     new Chart(ctx, {
         type: 'bar',

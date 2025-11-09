@@ -99,7 +99,18 @@ class ReportController extends Controller
                 : 0,
         ];
 
-        return view('reports.production', compact('productionData', 'equipment', 'startDate', 'endDate', 'totals', 'equipmentId'));
+        // Preparar datos para el gráfico
+        $chartData = $productionData->map(function($prod) {
+            return [
+                'date' => $prod->production_date->format('d/m'),
+                'equipment' => $prod->equipment->name,
+                'planned' => $prod->planned_production,
+                'actual' => $prod->actual_production,
+                'good' => $prod->good_units
+            ];
+        })->values();
+
+        return view('reports.production', compact('productionData', 'equipment', 'startDate', 'endDate', 'totals', 'equipmentId', 'chartData'));
     }
 
     /**
