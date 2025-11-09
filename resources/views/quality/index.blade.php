@@ -67,11 +67,10 @@
 
             <!-- Filters -->
             <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-                <h3 class="text-lg font-semibold mb-4">Filtros</h3>
                 <form method="GET" action="{{ route('quality.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
-                        <label for="equipment_id" class="block text-sm font-medium text-gray-700 mb-2">Equipo</label>
-                        <select id="equipment_id" name="equipment_id" class="block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Equipo</label>
+                        <select name="equipment_id" class="block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
                             <option value="">Todos los equipos</option>
                             @foreach($equipment as $eq)
                                 <option value="{{ $eq->id }}" {{ request('equipment_id') == $eq->id ? 'selected' : '' }}>
@@ -82,8 +81,8 @@
                     </div>
 
                     <div>
-                        <label for="defect_type" class="block text-sm font-medium text-gray-700 mb-2">Tipo de Defecto</label>
-                        <select id="defect_type" name="defect_type" class="block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Defecto</label>
+                        <select name="defect_type" class="block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
                             <option value="">Todos los tipos</option>
                             @foreach($defectTypes as $type)
                                 <option value="{{ $type }}" {{ request('defect_type') == $type ? 'selected' : '' }}>
@@ -94,24 +93,83 @@
                     </div>
 
                     <div>
-                        <label for="start_date" class="block text-sm font-medium text-gray-700 mb-2">Fecha Inicio</label>
-                        <input type="date" id="start_date" name="start_date" value="{{ request('start_date') }}" class="block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Fecha Inicio</label>
+                        <input type="date" name="start_date" value="{{ request('start_date') }}" class="block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
                     </div>
 
                     <div>
-                        <label for="end_date" class="block text-sm font-medium text-gray-700 mb-2">Fecha Fin</label>
-                        <input type="date" id="end_date" name="end_date" value="{{ request('end_date') }}" class="block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Fecha Fin</label>
+                        <input type="date" name="end_date" value="{{ request('end_date') }}" class="block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
                     </div>
 
                     <div class="md:col-span-4 flex justify-end space-x-2">
-                        <a href="{{ route('quality.index') }}" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition">
-                            Limpiar Filtros
+                        <a href="{{ route('quality.index') }}" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-lg transition">
+                            Limpiar
                         </a>
-                        <button type="submit" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition">
-                            Aplicar Filtros
+                        <button type="submit" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition">
+                            Filtrar
                         </button>
                     </div>
                 </form>
+            </div>
+
+            <!-- Quality Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                            <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-gray-600 text-sm">Total Registros</p>
+                            <p class="text-2xl font-bold text-gray-800">{{ $qualityData->total() }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                            <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-gray-600 text-sm">Total Inspeccionado</p>
+                            <p class="text-2xl font-bold text-blue-600">{{ number_format($qualityData->sum('total_inspected')) }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-green-100 text-green-600">
+                            <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-gray-600 text-sm">Unidades Aprobadas</p>
+                            <p class="text-2xl font-bold text-green-600">{{ number_format($qualityData->sum('approved_units')) }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-red-100 text-red-600">
+                            <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-gray-600 text-sm">Unidades Rechazadas</p>
+                            <p class="text-2xl font-bold text-red-600">{{ number_format($qualityData->sum('rejected_units')) }}</p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Quality Inspections Table -->
