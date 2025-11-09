@@ -9,6 +9,7 @@ use App\Models\DowntimeData;
 use App\Services\KpiService;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ReportController extends Controller
 {
@@ -347,18 +348,147 @@ class ReportController extends Controller
     public function exportCustomReport(Request $request)
     {
         $validated = $request->validate([
-            'format' => 'required|in:pdf,excel',
-            'report_data' => 'required|json',
+            'format' => 'required|in:pdf,excel,csv',
         ]);
 
-        // Para futuro: Implementar exportación con libraries como:
-        // - Laravel Excel (maatwebsite/excel) para Excel
-        // - DomPDF o Snappy para PDF
+        // Get report data from session or regenerate
+        $reportData = $request->input('report_data');
         
+        if (!$reportData) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No hay datos de reporte para exportar',
+            ], 400);
+        }
+
+        $data = json_decode($reportData, true);
+        
+        if ($validated['format'] === 'pdf') {
+            return $this->exportToPdf($data);
+        } elseif ($validated['format'] === 'csv') {
+            return $this->exportToCsv($data);
+        }
+
         return response()->json([
-            'success' => true,
-            'message' => 'Funcionalidad de exportación disponible próximamente',
-            'format' => $validated['format'],
+            'success' => false,
+            'message' => 'Formato no soportado',
+        ], 400);
+    }
+
+    /**
+     * Export report to PDF
+     */
+    private function exportToPdf($reportData)
+    {
+        $data = $reportData['data'];
+        $period = $reportData['period'];
+        $selectedMetrics = [];
+        
+        // Determinar qué métricas están incluidas
+        if (isset($data[0])) {
+            if (isset($data[0]['oee'])) $selectedMetrics[] = 'oee';
+            if (isset($data[0]['production'])) $selectedMetrics[] = 'producción';
+            if (isset($data[0]['quality'])) $selectedMetrics[] = 'calidad';
+            if (isset($data[0]['downtime'])) $selectedMetrics[] = 'downtime';
+        }
+
+        $pdf = Pdf::loadView('reports.custom-pdf', [
+            'data' => $data,
+            'period' => $period,
+            'selectedMetrics' => $selectedMetrics,
         ]);
+
+        $filename = 'reporte-personalizado-' . date('Y-m-d-His') . '.pdf';
+        
+        return $pdf->download($filename);
+    }
+
+    /**
+     * Export report to CSV
+     */
+    private function exportToCsv($reportData)
+    {
+        $data = $reportData['data'];
+        $period = $reportData['period'];
+        
+        $filename = 'reporte-personalizado-' . date('Y-m-d-His') . '.csv';
+        
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"$filename\"",
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
+        ];
+
+        $callback = function() use ($data, $period) {
+            $file = fopen('php://output', 'w');
+            
+            // BOM para UTF-8
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            
+            // Información del reporte
+            fputcsv($file, ['REPORTE PERSONALIZADO - METALURGICA PRECISION S.A.']);
+            fputcsv($file, ['Período', $period['start'] . ' - ' . $period['end']]);
+            fputcsv($file, ['Generado', date('d/m/Y H:i:s')]);
+            fputcsv($file, []);
+            
+            foreach ($data as $equipmentData) {
+                // Nombre del equipo
+                fputcsv($file, []);
+                fputcsv($file, ['EQUIPO', $equipmentData['equipment']['name'], 'Código', $equipmentData['equipment']['code']]);
+                fputcsv($file, []);
+                
+                // OEE
+                if (isset($equipmentData['oee'])) {
+                    fputcsv($file, ['INDICADORES OEE']);
+                    fputcsv($file, ['Métrica', 'Valor']);
+                    fputcsv($file, ['OEE', $equipmentData['oee']['oee'] . '%']);
+                    fputcsv($file, ['Disponibilidad', $equipmentData['oee']['availability'] . '%']);
+                    fputcsv($file, ['Rendimiento', $equipmentData['oee']['performance'] . '%']);
+                    fputcsv($file, ['Calidad', $equipmentData['oee']['quality'] . '%']);
+                    fputcsv($file, []);
+                }
+                
+                // Producción
+                if (isset($equipmentData['production'])) {
+                    fputcsv($file, ['MÉTRICAS DE PRODUCCIÓN']);
+                    fputcsv($file, ['Métrica', 'Valor']);
+                    fputcsv($file, ['Planificado', number_format($equipmentData['production']['total_planned'], 0, ',', '.')]);
+                    fputcsv($file, ['Producido', number_format($equipmentData['production']['total_actual'], 0, ',', '.')]);
+                    fputcsv($file, ['Unidades Buenas', number_format($equipmentData['production']['total_good'], 0, ',', '.')]);
+                    fputcsv($file, ['Eficiencia', number_format($equipmentData['production']['efficiency'], 2, ',', '.') . '%']);
+                    fputcsv($file, []);
+                }
+                
+                // Calidad
+                if (isset($equipmentData['quality'])) {
+                    fputcsv($file, ['MÉTRICAS DE CALIDAD']);
+                    fputcsv($file, ['Métrica', 'Valor']);
+                    fputcsv($file, ['Inspeccionado', number_format($equipmentData['quality']['total_inspected'], 0, ',', '.')]);
+                    fputcsv($file, ['Aprobadas', number_format($equipmentData['quality']['total_approved'], 0, ',', '.')]);
+                    fputcsv($file, ['Rechazadas', number_format($equipmentData['quality']['total_rejected'], 0, ',', '.')]);
+                    fputcsv($file, ['Tasa de Calidad', number_format($equipmentData['quality']['quality_rate'], 2, ',', '.') . '%']);
+                    fputcsv($file, []);
+                }
+                
+                // Downtime
+                if (isset($equipmentData['downtime'])) {
+                    fputcsv($file, ['TIEMPOS MUERTOS']);
+                    fputcsv($file, ['Métrica', 'Valor']);
+                    fputcsv($file, ['Total Minutos', number_format($equipmentData['downtime']['total_minutes'], 0, ',', '.')]);
+                    fputcsv($file, ['Total Horas', $equipmentData['downtime']['total_hours']]);
+                    fputcsv($file, ['Planificado', number_format($equipmentData['downtime']['planned'], 0, ',', '.')]);
+                    fputcsv($file, ['No Planificado', number_format($equipmentData['downtime']['unplanned'], 0, ',', '.')]);
+                    fputcsv($file, []);
+                }
+                
+                fputcsv($file, ['----------------------------------------']);
+            }
+            
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }

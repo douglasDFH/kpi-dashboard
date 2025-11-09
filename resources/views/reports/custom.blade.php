@@ -176,7 +176,7 @@
                                         <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                         </svg>
-                                        Excel
+                                        CSV
                                     </button>
                                     <button id="printBtn" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition flex items-center">
                                         <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -411,12 +411,91 @@
         }
 
         // Export handlers
-        document.getElementById('exportPdfBtn')?.addEventListener('click', function() {
-            alert('Funcionalidad de exportación a PDF disponible próximamente.\n\nSe implementará con DomPDF o Snappy.');
+        document.getElementById('exportPdfBtn')?.addEventListener('click', async function() {
+            if (!window.currentReportData) {
+                alert('Por favor genera un reporte primero');
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('format', 'pdf');
+                formData.append('report_data', JSON.stringify(window.currentReportData));
+
+                // Crear un formulario temporal para enviar POST y descargar
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '{{ route("reports.custom.export") }}';
+                form.target = '_blank';
+
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = '_token';
+                csrfInput.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                form.appendChild(csrfInput);
+
+                const formatInput = document.createElement('input');
+                formatInput.type = 'hidden';
+                formatInput.name = 'format';
+                formatInput.value = 'pdf';
+                form.appendChild(formatInput);
+
+                const dataInput = document.createElement('input');
+                dataInput.type = 'hidden';
+                dataInput.name = 'report_data';
+                dataInput.value = JSON.stringify(window.currentReportData);
+                form.appendChild(dataInput);
+
+                document.body.appendChild(form);
+                form.submit();
+                document.body.removeChild(form);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al exportar a PDF: ' + error.message);
+            }
         });
 
-        document.getElementById('exportExcelBtn')?.addEventListener('click', function() {
-            alert('Funcionalidad de exportación a Excel disponible próximamente.\n\nSe implementará con Laravel Excel (maatwebsite/excel).');
+        document.getElementById('exportExcelBtn')?.addEventListener('click', async function() {
+            if (!window.currentReportData) {
+                alert('Por favor genera un reporte primero');
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('format', 'csv');
+                formData.append('report_data', JSON.stringify(window.currentReportData));
+
+                // Crear un formulario temporal para enviar POST y descargar
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '{{ route("reports.custom.export") }}';
+
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = '_token';
+                csrfInput.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                form.appendChild(csrfInput);
+
+                const formatInput = document.createElement('input');
+                formatInput.type = 'hidden';
+                formatInput.name = 'format';
+                formatInput.value = 'csv';
+                form.appendChild(formatInput);
+
+                const dataInput = document.createElement('input');
+                dataInput.type = 'hidden';
+                dataInput.name = 'report_data';
+                dataInput.value = JSON.stringify(window.currentReportData);
+                form.appendChild(dataInput);
+
+                document.body.appendChild(form);
+                form.submit();
+                document.body.removeChild(form);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al exportar a CSV: ' + error.message);
+            }
         });
 
     document.getElementById('printBtn')?.addEventListener('click', function() {
