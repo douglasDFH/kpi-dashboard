@@ -22,7 +22,8 @@ class KpiService
      */
     public function calculateOEE(int $equipmentId, ?Carbon $startDate = null, ?Carbon $endDate = null): array
     {
-        $startDate = $startDate ?? Carbon::now()->startOfDay();
+        // Por defecto, usar últimos 30 días para tener más datos
+        $startDate = $startDate ?? Carbon::now()->subDays(30)->startOfDay();
         $endDate = $endDate ?? Carbon::now()->endOfDay();
 
         $availability = $this->calculateAvailability($equipmentId, $startDate, $endDate);
@@ -162,7 +163,8 @@ class KpiService
      */
     public function calculateAdditionalMetrics(int $equipmentId, ?Carbon $startDate = null, ?Carbon $endDate = null): array
     {
-        $startDate = $startDate ?? Carbon::now()->startOfDay();
+        // Por defecto, usar últimos 30 días para coincidir con calculateOEE
+        $startDate = $startDate ?? Carbon::now()->subDays(30)->startOfDay();
         $endDate = $endDate ?? Carbon::now()->endOfDay();
 
         // Producción total
