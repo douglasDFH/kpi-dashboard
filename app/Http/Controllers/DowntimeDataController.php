@@ -36,7 +36,7 @@ class DowntimeDataController extends Controller
             $query->whereDate('start_time', '<=', $request->end_date);
         }
 
-        $downtimeData = $query->orderBy('start_time', 'desc')->paginate(15);
+        $downtimeData = $query->orderBy('start_time', 'desc')->paginate(15)->appends($request->except('page'));
         $equipment = Equipment::where('is_active', true)->get();
 
         return view('downtime.index', compact('downtimeData', 'equipment'));

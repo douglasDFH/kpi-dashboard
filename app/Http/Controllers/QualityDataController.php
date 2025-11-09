@@ -35,7 +35,7 @@ class QualityDataController extends Controller
             $query->whereDate('inspection_date', '<=', $request->end_date);
         }
 
-        $qualityData = $query->paginate(15);
+        $qualityData = $query->paginate(15)->appends($request->except('page'));
         $equipment = Equipment::where('is_active', true)->get();
 
         // Tipos de defectos disponibles

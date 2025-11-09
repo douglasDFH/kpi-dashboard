@@ -31,7 +31,7 @@ class ProductionDataController extends Controller
             $query->whereDate('production_date', '<=', $request->end_date);
         }
 
-        $productionData = $query->orderBy('production_date', 'desc')->paginate(15);
+        $productionData = $query->orderBy('production_date', 'desc')->paginate(15)->appends($request->except('page'));
         $equipment = Equipment::where('is_active', true)->get();
 
         return view('production.index', compact('productionData', 'equipment'));
