@@ -126,7 +126,7 @@
 
 <script>
     const ctx = document.getElementById('productionChart').getContext('2d');
-    // Datos de producción desde el servidor
+    
     const productionData = {!! json_encode($chartData) !!};
 
     new Chart(ctx, {

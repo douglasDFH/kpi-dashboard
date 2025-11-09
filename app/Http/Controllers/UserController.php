@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Role;
 use App\Models\AuditLog;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 
@@ -153,7 +154,7 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         // Prevenir que el usuario se elimine a sí mismo
-        if ($user->id === auth()->id()) {
+        if ($user->id === Auth::id()) {
             return redirect()->route('users.index')
                 ->with('error', 'No puedes eliminar tu propio usuario.');
         }
@@ -183,7 +184,7 @@ class UserController extends Controller
     public function toggleActive(User $user)
     {
         // Prevenir que el usuario se desactive a sí mismo
-        if ($user->id === auth()->id()) {
+        if ($user->id === Auth::id()) {
             return response()->json([
                 'success' => false,
                 'message' => 'No puedes desactivar tu propio usuario.'

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
 
 class AuditLog extends Model
@@ -38,14 +39,14 @@ class AuditLog extends Model
      */
     public static function logAction(
         string $action,
-        string $modelType = null,
-        int $modelId = null,
-        string $description = null,
+        ?string $modelType = null,
+        ?int $modelId = null,
+        ?string $description = null,
         array $oldValues = [],
         array $newValues = []
     ): self {
         return self::create([
-            'user_id' => auth()->id(),
+            'user_id' => Auth::id(),
             'action' => $action,
             'model_type' => $modelType,
             'model_id' => $modelId,
