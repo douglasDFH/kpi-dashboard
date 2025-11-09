@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DowntimeData;
 use App\Models\Equipment;
+use App\Events\ProductionDataUpdated;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -72,7 +73,10 @@ class DowntimeDataController extends Controller
             $validated['duration_minutes'] = $start->diffInMinutes($end);
         }
 
-        DowntimeData::create($validated);
+        $downtimeData = DowntimeData::create($validated);
+
+        // Disparar evento para actualizar dashboard en tiempo real
+        ProductionDataUpdated::dispatch($downtimeData);
 
         return redirect()->route('downtime.index')
             ->with('success', 'Tiempo muerto registrado exitosamente.');
@@ -110,6 +114,9 @@ class DowntimeDataController extends Controller
         }
 
         $downtime->update($validated);
+
+        // Disparar evento para actualizar dashboard en tiempo real
+        ProductionDataUpdated::dispatch($downtime);
 
         return redirect()->route('downtime.index')
             ->with('success', 'Tiempo muerto actualizado exitosamente.');

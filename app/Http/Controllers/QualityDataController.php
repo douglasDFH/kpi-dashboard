@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\QualityData;
 use App\Models\Equipment;
+use App\Events\ProductionDataUpdated;
 use Illuminate\Http\Request;
 
 class QualityDataController extends Controller
@@ -78,7 +79,10 @@ class QualityDataController extends Controller
             ])->withInput();
         }
 
-        QualityData::create($validated);
+        $qualityData = QualityData::create($validated);
+
+        // Disparar evento para actualizar dashboard en tiempo real
+        ProductionDataUpdated::dispatch($qualityData);
 
         return redirect()->route('quality.index')
             ->with('success', 'Inspección de calidad registrada exitosamente.');
@@ -125,6 +129,9 @@ class QualityDataController extends Controller
         }
 
         $quality->update($validated);
+
+        // Disparar evento para actualizar dashboard en tiempo real
+        ProductionDataUpdated::dispatch($quality);
 
         return redirect()->route('quality.index')
             ->with('success', 'Inspección de calidad actualizada exitosamente.');

@@ -212,9 +212,12 @@
         async function fetchKPIData(equipmentId) {
             try {
                 const response = await axios.get(`/api/kpi/${equipmentId}`);
-                const data = response.data.data;
-
-                updateDashboard(data);
+                
+                if (response.data.success && response.data.data) {
+                    updateDashboard(response.data.data);
+                } else {
+                    console.error('Respuesta API inválida:', response.data);
+                }
             } catch (error) {
                 console.error('Error fetching KPI data:', error);
             }
@@ -225,30 +228,38 @@
             const oee = data.oee;
             const metrics = data.metrics;
 
+            // Validar que los datos existan antes de actualizar
+            if (!oee || !metrics) {
+                console.warn('Datos incompletos recibidos:', data);
+                return;
+            }
+
             // Update OEE cards
-            document.getElementById('oee-value').textContent = oee.oee.toFixed(1) + '%';
-            document.getElementById('availability-value').textContent = oee.availability.toFixed(1) + '%';
-            document.getElementById('performance-value').textContent = oee.performance.toFixed(1) + '%';
-            document.getElementById('quality-value').textContent = oee.quality.toFixed(1) + '%';
+            document.getElementById('oee-value').textContent = (oee.oee || 0).toFixed(1) + '%';
+            document.getElementById('availability-value').textContent = (oee.availability || 0).toFixed(1) + '%';
+            document.getElementById('performance-value').textContent = (oee.performance || 0).toFixed(1) + '%';
+            document.getElementById('quality-value').textContent = (oee.quality || 0).toFixed(1) + '%';
 
             // Update additional metrics
-            document.getElementById('total-production').textContent = metrics.total_production;
-            document.getElementById('defective-units').textContent = metrics.defective_units;
-            document.getElementById('total-downtime').textContent = metrics.total_downtime_minutes;
+            document.getElementById('total-production').textContent = metrics.total_production || 0;
+            document.getElementById('defective-units').textContent = metrics.defective_units || 0;
+            document.getElementById('total-downtime').textContent = metrics.total_downtime_minutes || 0;
 
             // Update charts
             if (oeeChart) {
                 oeeChart.data.datasets[0].data = [
-                    oee.availability.toFixed(1),
-                    oee.performance.toFixed(1),
-                    oee.quality.toFixed(1)
+                    (oee.availability || 0).toFixed(1),
+                    (oee.performance || 0).toFixed(1),
+                    (oee.quality || 0).toFixed(1)
                 ];
                 oeeChart.update();
             }
 
             if (productionChart) {
-                const goodUnits = metrics.total_production - metrics.defective_units;
-                productionChart.data.datasets[0].data = [goodUnits, metrics.defective_units];
+                const totalProd = metrics.total_production || 0;
+                const defective = metrics.defective_units || 0;
+                const goodUnits = totalProd - defective;
+                productionChart.data.datasets[0].data = [goodUnits, defective];
                 productionChart.update();
             }
         }
@@ -294,23 +305,31 @@
             if (window.Echo) {
                 window.Echo.channel('kpi-dashboard')
                     .listen('.production.updated', (e) => {
-                        console.log('Production data updated:', e);
+                        console.log('📊 Evento de actualización recibido:', e);
                         showRealtimeIndicator();
-                        fetchKPIData(currentEquipmentId);
+                        // Esperar 500ms para asegurar que los datos se guardaron en BD
+                        setTimeout(() => {
+                            fetchKPIData(currentEquipmentId);
+                        }, 500);
                     })
                     .listen('.kpi.updated', (e) => {
-                        console.log('KPI updated:', e);
+                        console.log('📈 KPI actualizado:', e);
                         showRealtimeIndicator();
-                        if (e.equipment_id === currentEquipmentId) {
+                        if (e.equipment_id === currentEquipmentId && e.kpi_data) {
                             updateDashboard({ oee: e.kpi_data, metrics: {} });
                         }
+                    })
+                    .error((error) => {
+                        console.error('❌ Error en el canal de broadcasting:', error);
                     });
+            } else {
+                console.warn('⚠️ Echo no está disponible. Usando solo polling.');
             }
 
-            // Refresh data every 30 seconds
+            // Refresh data every 10 seconds as fallback
             setInterval(() => {
                 fetchKPIData(currentEquipmentId);
-            }, 30000);
+            }, 10000);
         });
     </script>
 </body>

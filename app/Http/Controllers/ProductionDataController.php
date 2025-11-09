@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ProductionData;
 use App\Models\Equipment;
+use App\Events\ProductionDataUpdated;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -67,7 +68,10 @@ class ProductionDataController extends Controller
             ])->withInput();
         }
 
-        ProductionData::create($validated);
+        $productionData = ProductionData::create($validated);
+
+        // Disparar evento para actualizar dashboard en tiempo real
+        ProductionDataUpdated::dispatch($productionData);
 
         return redirect()->route('production.index')
             ->with('success', 'Datos de producción registrados exitosamente.');
@@ -105,6 +109,9 @@ class ProductionDataController extends Controller
         }
 
         $production->update($validated);
+
+        // Disparar evento para actualizar dashboard en tiempo real
+        ProductionDataUpdated::dispatch($production);
 
         return redirect()->route('production.index')
             ->with('success', 'Datos de producción actualizados exitosamente.');
