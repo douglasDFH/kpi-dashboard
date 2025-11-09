@@ -144,7 +144,7 @@
     </div>
 
     <script>
-        let currentEquipmentId = 1; // Default equipment
+        let currentEquipmentId = null; // Se asignará dinámicamente
         let oeeChart = null;
         let productionChart = null;
 
@@ -210,29 +210,50 @@
 
         // Fetch KPI data
         async function fetchKPIData(equipmentId) {
+            if (!equipmentId) {
+                console.error('❌ No equipment ID provided');
+                return;
+            }
+
             try {
+                console.log(`📡 Obteniendo datos para equipo ${equipmentId}...`);
                 const response = await axios.get(`/api/kpi/${equipmentId}`);
                 
                 if (response.data.success && response.data.data) {
+                    console.log('✅ Datos recibidos:', response.data.data);
                     updateDashboard(response.data.data);
                 } else {
-                    console.error('Respuesta API inválida:', response.data);
+                    console.error('❌ Respuesta API inválida:', response.data);
+                    alert('Error: No se pudieron obtener los datos del KPI');
                 }
             } catch (error) {
-                console.error('Error fetching KPI data:', error);
+                console.error('❌ Error fetching KPI data:', error);
+                if (error.response) {
+                    console.error('Error response:', error.response.data);
+                }
+                alert('Error: No se pudo conectar con el servidor');
             }
         }
 
         // Update dashboard with data
         function updateDashboard(data) {
-            const oee = data.oee;
-            const metrics = data.metrics;
+            console.log('📊 Actualizando dashboard con:', data);
+            
+            const oee = data.oee || {};
+            const metrics = data.metrics || {};
 
             // Validar que los datos existan antes de actualizar
-            if (!oee || !metrics) {
-                console.warn('Datos incompletos recibidos:', data);
+            if (!oee || Object.keys(oee).length === 0) {
+                console.warn('⚠️ Sin datos OEE disponibles aún');
+                // Mostrar valores por defecto
+                document.getElementById('oee-value').textContent = '0.0%';
+                document.getElementById('availability-value').textContent = '0.0%';
+                document.getElementById('performance-value').textContent = '0.0%';
+                document.getElementById('quality-value').textContent = '0.0%';
                 return;
             }
+
+            console.log('✅ Actualizando valores en interfaz...');
 
             // Update OEE cards
             document.getElementById('oee-value').textContent = (oee.oee || 0).toFixed(1) + '%';
@@ -253,6 +274,7 @@
                     (oee.quality || 0).toFixed(1)
                 ];
                 oeeChart.update();
+                console.log('📊 Gráfico OEE actualizado');
             }
 
             if (productionChart) {
@@ -261,12 +283,16 @@
                 const goodUnits = totalProd - defective;
                 productionChart.data.datasets[0].data = [goodUnits, defective];
                 productionChart.update();
+                console.log('📊 Gráfico de Producción actualizado');
             }
+            
+            console.log('✅ Dashboard actualizado exitosamente');
         }
 
         // Select equipment
         function selectEquipment(equipmentId) {
             currentEquipmentId = equipmentId;
+            console.log(`🔧 Seleccionando equipo ${equipmentId}`);
 
             // Update button styles
             document.querySelectorAll('.equipment-btn').forEach(btn => {
@@ -276,6 +302,7 @@
             document.querySelector(`[data-equipment-id="${equipmentId}"]`).classList.add('bg-blue-600', 'ring-4', 'ring-blue-300');
             document.querySelector(`[data-equipment-id="${equipmentId}"]`).classList.remove('bg-blue-500');
 
+            console.log('📡 Cargando datos del equipo...');
             fetchKPIData(equipmentId);
         }
 
@@ -291,7 +318,18 @@
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
             initCharts();
-            fetchKPIData(currentEquipmentId);
+            
+            // Obtener el primer equipo disponible y seleccionarlo automáticamente
+            const firstButton = document.querySelector('.equipment-btn');
+            if (firstButton) {
+                currentEquipmentId = parseInt(firstButton.getAttribute('data-equipment-id'));
+                console.log('✅ Equipo inicial seleccionado:', currentEquipmentId);
+                firstButton.click(); // Simular click para cargar datos
+            } else {
+                console.warn('⚠️ No hay equipos disponibles en el sistema');
+                alert('❌ Por favor, cree al menos un equipo en la sección de Equipos');
+                return;
+            }
 
             // Add click listeners to equipment buttons
             document.querySelectorAll('.equipment-btn').forEach(btn => {
@@ -303,13 +341,16 @@
 
             // Setup WebSocket for real-time updates
             if (window.Echo) {
+                console.log('✅ Echo está disponible - Conectando a broadcasting...');
                 window.Echo.channel('kpi-dashboard')
                     .listen('.production.updated', (e) => {
                         console.log('📊 Evento de actualización recibido:', e);
                         showRealtimeIndicator();
                         // Esperar 500ms para asegurar que los datos se guardaron en BD
                         setTimeout(() => {
-                            fetchKPIData(currentEquipmentId);
+                            if (currentEquipmentId) {
+                                fetchKPIData(currentEquipmentId);
+                            }
                         }, 500);
                     })
                     .listen('.kpi.updated', (e) => {
@@ -328,7 +369,9 @@
 
             // Refresh data every 10 seconds as fallback
             setInterval(() => {
-                fetchKPIData(currentEquipmentId);
+                if (currentEquipmentId) {
+                    fetchKPIData(currentEquipmentId);
+                }
             }, 10000);
         });
     </script>
