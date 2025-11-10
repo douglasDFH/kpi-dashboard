@@ -331,7 +331,13 @@
         </main>
     </div>
 
-    <script>
+    <script type="module">
+        // Importar Chart.js directamente en este módulo
+        import Chart from 'chart.js/auto';
+        
+        // Hacer Chart disponible globalmente para Alpine
+        window.Chart = Chart;
+        
         // Debug: Verificar que Chart.js esté disponible
         console.log('🔍 Verificando dependencias:');
         console.log('Chart.js disponible:', typeof Chart !== 'undefined');
