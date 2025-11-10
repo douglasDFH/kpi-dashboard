@@ -104,7 +104,10 @@ class UserController extends Controller
     public function edit(User $user)
     {
         $roles = Role::where('is_active', true)->get();
-        return view('users.edit', compact('user', 'roles'));
+        $permissions = \App\Models\Permission::all()->groupBy('module');
+        $userPermissions = $user->customPermissions->pluck('id')->toArray();
+        
+        return view('users.edit', compact('user', 'roles', 'permissions', 'userPermissions'));
     }
 
     /**
@@ -120,6 +123,8 @@ class UserController extends Controller
             'phone' => 'nullable|string|max:20',
             'position' => 'nullable|string|max:100',
             'is_active' => 'boolean',
+            'permissions' => 'nullable|array',
+            'permissions.*' => 'exists:permissions,id',
         ]);
 
         $oldValues = $user->toArray();
@@ -133,6 +138,13 @@ class UserController extends Controller
         $validated['is_active'] = $request->has('is_active');
 
         $user->update($validated);
+
+        // Sincronizar permisos personalizados
+        if ($request->has('permissions')) {
+            $user->customPermissions()->sync($request->permissions);
+        } else {
+            $user->customPermissions()->sync([]);
+        }
 
         // Registrar en auditoría
         AuditLog::logAction(

@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -72,6 +73,15 @@ class User extends Authenticatable
     }
 
     /**
+     * Relación many-to-many con permisos personalizados
+     */
+    public function customPermissions(): BelongsToMany
+    {
+        return $this->belongsToMany(Permission::class, 'user_permission')
+                    ->withTimestamps();
+    }
+
+    /**
      * Verificar si el usuario tiene un rol específico
      */
     public function hasRole(string $roleName): bool
@@ -89,9 +99,20 @@ class User extends Authenticatable
 
     /**
      * Verificar si el usuario tiene un permiso específico
+     * Primero verifica permisos personalizados, luego permisos del rol
      */
     public function hasPermission(string $permissionName): bool
     {
+        // Verificar si tiene el permiso personalizado asignado
+        $hasCustomPermission = $this->customPermissions()
+            ->where('name', $permissionName)
+            ->exists();
+        
+        if ($hasCustomPermission) {
+            return true;
+        }
+
+        // Si no tiene permisos personalizados, verificar permisos del rol
         return $this->role && $this->role->hasPermission($permissionName);
     }
 

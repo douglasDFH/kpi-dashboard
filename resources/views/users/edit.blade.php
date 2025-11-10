@@ -136,6 +136,41 @@
                             </label>
                         </div>
 
+                        <!-- Permisos Personalizados -->
+                        <div class="mb-8">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Permisos Personalizados</h3>
+                            <p class="text-sm text-gray-600 mb-4">Selecciona los permisos específicos que sobreescriben los permisos del rol.</p>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                @foreach($permissions as $module => $modulePermissions)
+                                    <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                                        <h4 class="font-semibold text-gray-800 mb-3 capitalize">
+                                            {{ $module === 'dashboard' ? 'Dashboard' : 
+                                               ($module === 'equipment' ? 'Equipment' : 
+                                               ($module === 'production' ? 'Production' : 
+                                               ($module === 'quality' ? 'Quality' : 
+                                               ($module === 'downtime' ? 'Downtime' : 
+                                               ($module === 'reports' ? 'Reports' : 
+                                               ($module === 'users' ? 'Users' : 
+                                               ($module === 'audit' ? 'Auditoría' : $module))))))) }}
+                                        </h4>
+                                        <div class="space-y-2">
+                                            @foreach($modulePermissions as $permission)
+                                                <label class="flex items-center">
+                                                    <input type="checkbox" 
+                                                           name="permissions[]" 
+                                                           value="{{ $permission->id }}"
+                                                           {{ in_array($permission->id, $userPermissions) ? 'checked' : '' }}
+                                                           class="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500">
+                                                    <span class="ml-2 text-sm text-gray-700">{{ $permission->display_name }}</span>
+                                                </label>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+
                         <!-- Submit Buttons -->
                         <div class="flex items-center justify-end space-x-4">
                             <a href="{{ route('users.index') }}" class="px-6 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium rounded-lg transition">
