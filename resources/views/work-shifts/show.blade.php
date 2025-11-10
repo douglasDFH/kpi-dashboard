@@ -571,11 +571,18 @@
                             ];
                             this.productionChart.update();
 
-                            // Reset form
-                            this.form = { quantity: 0, good_units: 0, defective_units: 0 };
-
                             // Show success alert
                             this.showAlert('success', data.message);
+
+                            // Si la jornada fue completada, redirigir después de 2 segundos
+                            if (data.data.status === 'completed') {
+                                setTimeout(() => {
+                                    window.location.href = '{{ route("work-shifts.index") }}';
+                                }, 2000);
+                            } else {
+                                // Reset form para registro manual continuo
+                                this.form = { quantity: 0, good_units: 0, defective_units: 0 };
+                            }
                         } else {
                             this.showAlert('error', data.message || 'Error al registrar producción');
                         }

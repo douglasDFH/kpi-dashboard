@@ -129,10 +129,11 @@ class WorkShiftController extends Controller
      */
     public function recordProduction(Request $request, WorkShift $workShift)
     {
-        if ($workShift->status !== 'active') {
+        // Permitir tanto 'active' como 'pending_registration'
+        if (!in_array($workShift->status, ['active', 'pending_registration'])) {
             return response()->json([
                 'success' => false,
-                'message' => 'Esta jornada no está activa.'
+                'message' => 'Esta jornada no está disponible para registrar producción.'
             ], 400);
         }
 
@@ -156,15 +157,23 @@ class WorkShiftController extends Controller
             $validated['defective_units']
         );
 
+        // Si estaba en pending_registration, finalizar automáticamente
+        if ($workShift->status === 'pending_registration') {
+            $workShift->endShift();
+        }
+
         return response()->json([
             'success' => true,
-            'message' => 'Producción registrada exitosamente.',
+            'message' => $workShift->status === 'completed' 
+                ? 'Producción registrada y jornada finalizada exitosamente.' 
+                : 'Producción registrada exitosamente.',
             'data' => [
                 'actual_production' => $workShift->actual_production,
                 'good_units' => $workShift->good_units,
                 'defective_units' => $workShift->defective_units,
                 'progress' => $workShift->progress,
                 'quality_rate' => $workShift->quality_rate,
+                'status' => $workShift->status,
             ]
         ]);
     }
