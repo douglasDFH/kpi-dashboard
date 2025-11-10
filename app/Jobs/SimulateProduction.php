@@ -42,8 +42,9 @@ class SimulateProduction implements ShouldQueue
         $newProduction = min($this->workShift->actual_production + $increment, $targetQuantity);
         
         // Calcular unidades buenas y defectuosas (95% buenas, 5% defectuosas)
-        $goodUnits = $this->workShift->good_units + ($increment * 0.95);
-        $defectiveUnits = $this->workShift->defective_units + ($increment * 0.05);
+        // Se calcula sobre el TOTAL acumulado, no sobre el incremento
+        $goodUnits = round($newProduction * 0.95);
+        $defectiveUnits = $newProduction - $goodUnits;
 
         // Actualizar el shift
         $this->workShift->update([
