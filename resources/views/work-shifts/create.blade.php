@@ -106,13 +106,15 @@
                                 class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                                 :class="{ 'bg-gray-100': !equipmentId }">
                                 <option value="">Sin plan asignado</option>
-                                <template x-if="equipmentId">
-                                    @foreach($plans as $plan)
-                                        <option value="{{ $plan->id }}" data-equipment="{{ $plan->equipment_id }}" {{ old('plan_id') == $plan->id ? 'selected' : '' }}>
-                                            Plan #{{ $plan->id }} - {{ $plan->product_name }} ({{ $plan->shift }})
-                                        </option>
-                                    @endforeach
-                                </template>
+                                @foreach($plans as $plan)
+                                    <option 
+                                        value="{{ $plan->id }}" 
+                                        data-equipment="{{ $plan->equipment_id }}" 
+                                        x-show="!equipmentId || equipmentId == '{{ $plan->equipment_id }}'"
+                                        {{ old('plan_id') == $plan->id ? 'selected' : '' }}>
+                                        Plan #{{ $plan->id }} - {{ $plan->product_name }} ({{ $plan->shift }})
+                                    </option>
+                                @endforeach
                             </select>
                             @error('plan_id')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
