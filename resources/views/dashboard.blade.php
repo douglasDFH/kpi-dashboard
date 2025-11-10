@@ -18,6 +18,16 @@
                         <p class="text-gray-600">Monitor en Tiempo Real de Indicadores Clave de Desempeño</p>
                     </div>
                     <div class="flex items-center space-x-4">
+                        <!-- User Info -->
+                        <div class="text-right mr-4">
+                            <p class="text-sm font-semibold text-gray-800">{{ auth()->user()->name }}</p>
+                            <p class="text-xs text-gray-600">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ auth()->user()->role_color }}">
+                                    {{ auth()->user()->role_name }}
+                                </span>
+                            </p>
+                        </div>
+                        
                         <a href="{{ route('equipment.index') }}" class="inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-lg transition">
                             <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -60,6 +70,17 @@
                             </svg>
                             Auditoría
                         </a>
+                        
+                        <!-- Logout Button -->
+                        <form method="POST" action="{{ route('logout') }}" class="inline">
+                            @csrf
+                            <button type="submit" class="inline-flex items-center px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white text-sm font-medium rounded-lg transition">
+                                <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                </svg>
+                                Salir
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
