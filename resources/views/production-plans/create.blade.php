@@ -204,15 +204,14 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label for="start_date" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Fecha de Inicio <span class="text-red-500">*</span>
+                                    Fecha y Hora de Inicio <span class="text-red-500">*</span>
                                 </label>
                                 <input 
-                                    type="date" 
+                                    type="datetime-local" 
                                     id="start_date" 
                                     name="start_date" 
-                                    value="{{ old('start_date') }}"
+                                    value="{{ old('start_date', now()->format('Y-m-d\TH:i')) }}"
                                     x-model="startDate"
-                                    min="{{ now()->format('Y-m-d') }}"
                                     class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                                     required>
                                 @error('start_date')
@@ -222,15 +221,14 @@
 
                             <div>
                                 <label for="end_date" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Fecha de Fin <span class="text-red-500">*</span>
+                                    Fecha y Hora de Fin <span class="text-red-500">*</span>
                                 </label>
                                 <input 
-                                    type="date" 
+                                    type="datetime-local" 
                                     id="end_date" 
                                     name="end_date" 
-                                    value="{{ old('end_date') }}"
+                                    value="{{ old('end_date', now()->addDays(3)->format('Y-m-d\TH:i')) }}"
                                     x-model="endDate"
-                                    :min="startDate || '{{ now()->format('Y-m-d') }}'"
                                     class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                                     required>
                                 @error('end_date')
