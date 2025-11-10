@@ -49,6 +49,13 @@ class UserController extends Controller
      */
     public function create()
     {
+        // Verificar permiso
+        /** @var \App\Models\User $currentUser */
+        $currentUser = Auth::user();
+        if (!$currentUser->hasPermission('users.create')) {
+            abort(403, 'No tienes permiso para crear usuarios.');
+        }
+
         $roles = Role::where('is_active', true)->get();
         return view('users.create', compact('roles'));
     }
@@ -58,6 +65,12 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        // Verificar permiso
+        /** @var \App\Models\User $currentUser */
+        $currentUser = Auth::user();
+        if (!$currentUser->hasPermission('users.create')) {
+            abort(403, 'No tienes permiso para crear usuarios.');
+        }
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
@@ -103,6 +116,13 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
+        // Verificar permiso
+        /** @var \App\Models\User $currentUser */
+        $currentUser = Auth::user();
+        if (!$currentUser->hasPermission('users.edit')) {
+            abort(403, 'No tienes permiso para editar usuarios.');
+        }
+
         $roles = Role::where('is_active', true)->get();
         $permissions = \App\Models\Permission::all()->groupBy('module');
         $userPermissions = $user->customPermissions->pluck('id')->toArray();
@@ -115,6 +135,13 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
+        // Verificar permiso
+        /** @var \App\Models\User $currentUser */
+        $currentUser = Auth::user();
+        if (!$currentUser->hasPermission('users.edit')) {
+            abort(403, 'No tienes permiso para actualizar usuarios.');
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
@@ -169,6 +196,13 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
+        // Verificar permiso
+        /** @var \App\Models\User $currentUser */
+        $currentUser = Auth::user();
+        if (!$currentUser->hasPermission('users.delete')) {
+            abort(403, 'No tienes permiso para eliminar usuarios.');
+        }
+
         // Prevenir que el usuario se elimine a sí mismo
         if ($user->id === Auth::id()) {
             return redirect()->route('users.index')
