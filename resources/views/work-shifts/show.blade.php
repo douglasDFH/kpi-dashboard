@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jornada #{{ $shift->id }} - KPI Dashboard</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <!-- Chart.js desde CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body class="bg-gray-100">
     <div class="min-h-screen" x-data="shiftMonitor">
@@ -331,13 +333,7 @@
         </main>
     </div>
 
-    <script type="module">
-        // Importar Chart.js directamente en este módulo
-        import Chart from 'chart.js/auto';
-        
-        // Hacer Chart disponible globalmente para Alpine
-        window.Chart = Chart;
-        
+    <script>
         // Debug: Verificar que Chart.js esté disponible
         console.log('🔍 Verificando dependencias:');
         console.log('Chart.js disponible:', typeof Chart !== 'undefined');
