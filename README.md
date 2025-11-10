@@ -1,514 +1,424 @@
-# KPI Dashboard Industrial
+# 🏭 KPI Dashboard Industrial
 
-Un dashboard moderno y en tiempo real para el monitoreo de indicadores clave de desempeño (KPI) de equipos industriales. Construido con **Laravel 12** y **Vite**, proporciona métricas de eficiencia operativa, disponibilidad y calidad.
+> **Sistema de Monitoreo de Producción Industrial en Tiempo Real**
 
-![Laravel](https://img.shields.io/badge/Laravel-12.0-FF2D20?style=flat&logo=laravel)
+Un dashboard moderno y en tiempo real para el monitoreo de indicadores clave de desempeño (KPI) de equipos industriales. Construido con **Laravel 11**, **Laravel Reverb (WebSockets)**, y **Tailwind CSS**.
+
+![Laravel](https://img.shields.io/badge/Laravel-11.0-FF2D20?style=flat&logo=laravel)
 ![PHP](https://img.shields.io/badge/PHP-8.2-777BB4?style=flat&logo=php)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-4.0-38B2AC?style=flat&logo=tailwind-css)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-3.0-38B2AC?style=flat&logo=tailwind-css)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-## 📋 Tabla de Contenidos
+---
 
-- [Características](#características)
-- [Requisitos](#requisitos)
-- [Instalación](#instalación)
-- [Estructura del Proyecto](#estructura-del-proyecto)
-- [Configuración](#configuración)
-- [Uso](#uso)
-- [API Endpoints](#api-endpoints)
-- [Base de Datos](#base-de-datos)
-- [Arquitectura](#arquitectura)
-- [Testing](#testing)
-- [Contribuir](#contribuir)
-- [Licencia](#licencia)
+## 📚 Documentación Completa
 
-## ✨ Características
+### 🚀 Inicio Rápido
+👉 **[INICIO.md](INICIO.md)** - Guía de inicio, comandos y configuración inicial
 
-### Monitoreo en Tiempo Real
-- **OEE (Overall Equipment Effectiveness)**: Métrica compuesta de Disponibilidad × Rendimiento × Calidad
+### 🧹 Limpieza de Plantilla
+👉 **[LIMPIEZA-PLANTILLA.md](LIMPIEZA-PLANTILLA.md)** - Purgar dependencias innecesarias (Pusher, etc.)
+
+### 🏗️ Arquitectura
+👉 **[ARCHITECTURE.md](ARCHITECTURE.md)** - Estructura técnica, patrones y flujos de datos
+
+### 📋 Plan de Acción
+👉 **[plan-de-accion-check.md](plan-de-accion-check.md)** - Checklist completo de implementación
+
+### 📖 Casos de Uso
+👉 **[casos de usos.md](casos%20de%20usos.md)** - Flujos detallados de los 10 casos de uso principales
+
+---
+
+## ✨ Características Principales
+
+## ✨ Características Principales
+
+### 🎯 Monitoreo de KPIs en Tiempo Real
+- **OEE (Overall Equipment Effectiveness)**: Métrica compuesta (Disponibilidad × Rendimiento × Calidad)
 - **Disponibilidad**: Porcentaje de tiempo operativo del equipo
-- **Rendimiento**: Velocidad de producción actual vs velocidad teórica
-- **Calidad**: Porcentaje de productos sin defectos
+- **Rendimiento**: Velocidad de producción real vs teórica
+- **Calidad**: Porcentaje de unidades sin defectos
+- **Actualizaciones en vivo** vía WebSockets (Laravel Reverb)
 
-### Dashboard Interactivo
-- Selector dinámico de equipos
-- Tarjetas de resumen de KPIs
-- Gráficos en tiempo real con Chart.js
-- Interfaz responsiva (móvil, tablet, desktop)
-- Actualización automática de datos
+### 👥 Sistema de Roles
+- **Administrador**: Gestión completa del sistema, configuración de máquinas y planes, reportes globales
+- **Supervisor**: Gestión de jornadas, mantenimientos, monitoreo de área
+- **Máquina (API)**: Autenticación vía token para reporte automático de producción
 
-### Broadcasting en Tiempo Real
-- Notificaciones instantáneas via Pusher
-- Eventos de actualización de KPI
-- Sincronización en tiempo real entre clientes
+### 🏭 Gestión de Producción
+- **Planes de Producción**: Configuración de objetivos por máquina y turno
+- **Jornadas de Trabajo**: Inicio/Fin automático con snapshot de objetivos
+- **Registro de Producción**: Captura 1 a 1 o por lotes desde máquinas
+- **Paradas Automáticas**: Detención por límite de fallos de calidad
+- **Mantenimientos**: Registro de calibraciones, preventivos y correctivos
 
-### Gestión de Datos
-- Modelos completos para Equipment, Production Data, Quality Data, Downtime Data
-- Seeders para población de datos de prueba
-- Factories para generación de datos
-- Migrations versionadas
+### 📊 Dashboard Interactivo
+- **Vista por Máquina**: Métricas individuales e historial
+- **Vista por Área**: KPIs agregados de múltiples máquinas
+- **Gráficos en tiempo real**: Chart.js o ApexCharts
+- **Componentes reutilizables**: Blade Components con Alpine.js
+- **Diseño responsivo**: Tailwind CSS
 
-### API REST Completa
-- Endpoints para Equipment, Production Data y KPI
-- Autenticación con Sanctum
-- Validación de datos
-- Respuestas estructuradas
+### 🚀 Arquitectura Moderna
+- **Repository Pattern**: Abstracción de acceso a datos
+- **Service Layer**: Lógica de negocio separada
+- **Event-Driven**: Eventos y Listeners para tiempo real
+- **API Versionada**: `/api/v1/*` para máquinas
+- **Form Requests**: Validación centralizada
+
+### 🤖 Emulador de Máquinas
+- **Interfaz Web**: Control manual de simulación
+- **Comando Artisan**: `php artisan emulator:maquina {id}`
+- **Producción automática**: Genera datos realistas para demos
+
+---
 
 ## 🔧 Requisitos
 
-- **PHP**: 8.2+
-- **Laravel**: 12.0+
-- **Node.js**: 18.0+ (para Vite)
+- **PHP**: 8.2 o superior
+- **Laravel**: 11.0
 - **Composer**: 2.4+
-- **Base de Datos**: MySQL 8.0+ o SQLite
-- **Pusher** (opcional): Para notificaciones en tiempo real
+- **Node.js**: 18.0+ y npm
+- **MySQL**: 8.0+ (o compatible)
+- **Redis** (opcional): Para cache y sessions
 
-## 🚀 Instalación
+---
 
-### Paso 1: Clonar el repositorio
+## 🚀 Instalación Rápida
+
+### Opción 1: Setup Automático (Recomendado)
 
 ```bash
+# Clonar repositorio
 git clone <repository-url>
 cd kpi-dashboard
-```
 
-### Paso 2: Instalación automática (recomendado)
-
-```bash
+# Instalar y configurar
 composer run setup
+
+# Iniciar servidor de desarrollo
+composer run dev
 ```
 
-Este comando ejecuta:
-1. Instala dependencias de PHP
-2. Genera archivo `.env` desde `.env.example`
-3. Genera clave de aplicación
-4. Ejecuta migraciones
-5. Instala dependencias de Node.js
-6. Compila assets
-
-### Paso 3: Instalación manual
+### Opción 2: Instalación Manual
 
 ```bash
-# Instalar dependencias de PHP
+# 1. Instalar dependencias PHP
 composer install
 
-# Copiar archivo de configuración
+# 2. Configurar entorno
 cp .env.example .env
-
-# Generar clave de aplicación
 php artisan key:generate
 
-# Ejecutar migraciones
-php artisan migrate
+# 3. Configurar base de datos en .env
+# DB_DATABASE=kpi_dashboard
+# DB_USERNAME=root
+# DB_PASSWORD=
 
-# Instalar dependencias de frontend
+# 4. Ejecutar migraciones y seeders
+php artisan migrate:fresh --seed
+
+# 5. Instalar dependencias frontend
 npm install
 
-# Compilar assets
+# 6. Compilar assets
 npm run build
+
+# 7. Iniciar servicios
+php artisan serve
+php artisan reverb:start    # En otra terminal
+php artisan queue:work      # En otra terminal
 ```
 
+### Instalación de Paquetes Adicionales
+
+```bash
+# Spatie Permission (Roles)
+composer require spatie/laravel-permission
+
+# Laravel Reverb (WebSockets)
+php artisan install:broadcasting
+
+# Opcional: Herramientas de desarrollo
+composer require --dev laravel/pint barryvdh/laravel-debugbar
+```
+
+---
+
 ## 📁 Estructura del Proyecto
+
+Ver **[ARCHITECTURE.md](ARCHITECTURE.md)** para la estructura completa y detallada.
 
 ```
 kpi-dashboard/
 ├── app/
-│   ├── Events/                      # Eventos de Broadcasting
-│   │   ├── KpiUpdated.php
-│   │   └── ProductionDataUpdated.php
-│   ├── Http/
-│   │   ├── Controllers/
-│   │   │   ├── Api/                 # Controladores de API
-│   │   │   │   ├── KpiController.php
-│   │   │   │   ├── EquipmentController.php
-│   │   │   │   └── ProductionDataController.php
-│   │   │   ├── DashboardController.php
-│   │   │   └── Controller.php
-│   │   └── Requests/                # Form Requests para validación
-│   ├── Models/                      # Modelos Eloquent
-│   │   ├── Equipment.php
-│   │   ├── ProductionData.php
-│   │   ├── QualityData.php
-│   │   ├── DowntimeData.php
-│   │   └── User.php
-│   ├── Services/
-│   │   └── KpiService.php           # Lógica de cálculo de KPIs
-│   ├── Events/
-│   ├── Providers/
-│   │   └── AppServiceProvider.php
-│   └── ...
-├── database/
-│   ├── migrations/                  # Migraciones de BD
-│   │   ├── create_equipment_table.php
-│   │   ├── create_production_data_table.php
-│   │   ├── create_quality_data_table.php
-│   │   ├── create_downtime_data_table.php
-│   │   └── ...
-│   ├── seeders/                     # Pobladores de datos
-│   │   ├── EquipmentSeeder.php
-│   │   ├── ProductionDataSeeder.php
-│   │   ├── QualityDataSeeder.php
-│   │   ├── DowntimeDataSeeder.php
-│   │   └── DatabaseSeeder.php
-│   └── factories/
-│       └── UserFactory.php
+│   ├── Http/Controllers/
+│   │   ├── Admin/              # Gestión de administrador
+│   │   ├── Supervisor/         # Gestión de supervisor
+│   │   └── Api/V1/Maquina/    # API para máquinas
+│   ├── Services/               # Lógica de negocio
+│   ├── Repositories/           # Acceso a datos
+│   ├── Events/                 # Eventos del sistema
+│   ├── Listeners/              # Listeners de eventos
+│   └── Models/                 # Modelos Eloquent
 ├── resources/
-│   ├── css/
-│   │   └── app.css                  # Estilos Tailwind
-│   ├── js/
-│   │   ├── app.js                   # Punto de entrada JS
-│   │   └── bootstrap.js             # Configuración de Echo/Pusher
-│   └── views/
-│       ├── dashboard.blade.php      # Vista principal del dashboard
-│       └── welcome.blade.php        # Página de bienvenida
+│   ├── views/
+│   │   ├── admin/             # Vistas de administrador
+│   │   ├── supervisor/        # Vistas de supervisor
+│   │   ├── components/        # Componentes Blade
+│   │   └── emulator/          # Emulador de máquinas
+│   └── js/
+│       └── echo.js            # Laravel Echo (WebSockets)
+├── database/
+│   ├── migrations/            # Migraciones de BD
+│   └── seeders/               # Datos de prueba
 ├── routes/
-│   ├── api.php                      # Rutas de API
-│   ├── web.php                      # Rutas web
-│   ├── channels.php                 # Canales de Broadcasting
-│   └── console.php                  # Comandos CLI
-├── config/
-│   ├── app.php
-│   ├── database.php
-│   ├── broadcasting.php             # Configuración de Pusher
-│   └── ...
-├── storage/                         # Almacenamiento de la aplicación
-├── public/                          # Raíz web
-├── tests/                           # Tests unitarios y funcionales
-├── bootstrap/                       # Bootstrap de la aplicación
-├── vendor/                          # Dependencias de Composer
-├── node_modules/                    # Dependencias de npm
-├── .env.example                     # Plantilla de variables de entorno
-├── artisan                          # Herramienta de línea de comandos
-├── composer.json                    # Configuración de Composer
-├── package.json                     # Configuración de npm
-├── phpunit.xml                      # Configuración de PHPUnit
-├── vite.config.js                   # Configuración de Vite
-└── README.md                        # Este archivo
+│   ├── web.php                # Rutas web
+│   ├── api.php                # API versionada
+│   └── channels.php           # Canales WebSocket
+├── INICIO.md                  # 🚀 Guía de inicio
+├── ARCHITECTURE.md            # 🏗️ Arquitectura
+├── plan-de-accion-check.md    # ✅ Checklist
+└── casos de usos.md           # 📖 Casos de uso
 ```
+
+---
 
 ## ⚙️ Configuración
 
-### Variables de Entorno (`.env`)
+### Variables de Entorno Principales
 
 ```env
-# Aplicación
-APP_NAME="KPI Dashboard"
-APP_ENV=production
-APP_KEY=                            # Generar con: php artisan key:generate
-APP_DEBUG=false
+APP_NAME="KPI Dashboard Industrial"
+APP_ENV=local
+APP_DEBUG=true
 APP_URL=http://localhost:8000
 
 # Base de Datos
 DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
 DB_DATABASE=kpi_dashboard
 DB_USERNAME=root
 DB_PASSWORD=
 
-# Broadcasting (Pusher)
-BROADCAST_DRIVER=pusher
-PUSHER_APP_ID=
-PUSHER_APP_KEY=
-PUSHER_APP_SECRET=
-PUSHER_APP_CLUSTER=mt1
+# Laravel Reverb (WebSockets)
+REVERB_APP_ID=
+REVERB_APP_KEY=
+REVERB_APP_SECRET=
+REVERB_HOST="localhost"
+REVERB_PORT=8080
 
 # Queue
 QUEUE_CONNECTION=database
 
-# Mail
-MAIL_MAILER=log
-MAIL_FROM_ADDRESS="noreply@example.com"
-MAIL_FROM_NAME="${APP_NAME}"
+# Broadcasting
+BROADCAST_DRIVER=reverb
 ```
 
-### Configurar Pusher (Opcional)
+Ver **[INICIO.md](INICIO.md)** para configuración detallada.
 
-Para habilitar notificaciones en tiempo real:
+---
 
-1. Crear cuenta en [Pusher.com](https://pusher.com)
-2. Obtener credenciales (APP_ID, APP_KEY, APP_SECRET, CLUSTER)
-3. Actualizar `.env` con las credenciales
-4. Configurar Pusher en `resources/js/bootstrap.js`
+## 💻 Uso del Sistema
 
-### Base de Datos
-
-La aplicación utiliza las siguientes tablas:
-
-- **equipment**: Registros de equipos industriales
-- **production_data**: Datos de producción por equipo
-- **quality_data**: Métricas de calidad
-- **downtime_data**: Registros de tiempo de inactividad
-- **users**: Usuarios del sistema
-
-## 💻 Uso
-
-### Iniciar Desarrollo
+### Comandos de Desarrollo
 
 ```bash
-# Opción 1: Usando el script dev
+# Iniciar todos los servicios concurrentemente
 composer run dev
 
-# Opción 2: Manualmente
-php artisan serve              # Inicia servidor en localhost:8000
-php artisan queue:listen       # Procesa colas
-php artisan pail               # Logs en tiempo real
-npm run dev                    # Inicia Vite en modo desarrollo
+# O manualmente:
+php artisan serve              # Servidor (http://localhost:8000)
+php artisan reverb:start       # WebSockets
+php artisan queue:work         # Cola de trabajos
+npm run dev                    # Vite (hot reload)
 ```
 
-El comando `composer run dev` inicia todos los servicios concurrentemente:
-- **Server**: http://localhost:8000
-- **Queue Listener**: Procesa trabajos
-- **Pail**: Monitoreo de logs
-- **Vite**: Compilación de assets
+### Usuarios de Prueba (después de seeders)
 
-### Acceder al Dashboard
+**Administrador:**
+- Email: `admin@kpi-dashboard.com`
+- Password: `password`
 
+**Supervisor:**
+- Email: `supervisor@kpi-dashboard.com`
+- Password: `password`
+
+### Emulador de Máquinas
+
+**Interfaz Web:**
 ```
-http://localhost:8000
+http://localhost:8000/emulator
 ```
 
-### Ejecutar Seeders
-
+**Comando Artisan:**
 ```bash
-# Poblar la base de datos con datos de prueba
-php artisan db:seed
+# Emular una máquina específica
+php artisan emulator:maquina {maquina-uuid} --interval=5
 
-# Sembrar solo EquipmentSeeder
-php artisan db:seed --class=EquipmentSeeder
+# Emular todas las máquinas
+php artisan emulator:maquina --all --interval=10
 ```
 
-### Compilar Assets
-
-```bash
-# Desarrollo (con hot reload)
-npm run dev
-
-# Producción (minificado)
-npm run build
-```
+---
 
 ## 📡 API Endpoints
 
 ### Autenticación
-```
-GET /api/user (requiere auth:sanctum)
+Todas las rutas API usan **Laravel Sanctum** con tokens.
+
+### Máquinas (`/api/v1/maquina/*`)
+
+```http
+POST   /api/v1/maquina/produccion     # Registrar producción
+PUT    /api/v1/maquina/status         # Actualizar estado
+POST   /api/v1/maquina/heartbeat      # Keep-alive
 ```
 
-### Equipment
-```
-GET    /api/equipment              # Listar todos los equipos
-POST   /api/equipment              # Crear nuevo equipo
-GET    /api/equipment/{id}         # Obtener equipo específico
-PUT    /api/equipment/{id}         # Actualizar equipo
-DELETE /api/equipment/{id}         # Eliminar equipo
-```
-
-### Production Data
-```
-GET    /api/production-data        # Listar datos de producción
-POST   /api/production-data        # Crear registro
-GET    /api/production-data/{id}   # Obtener registro
-PUT    /api/production-data/{id}   # Actualizar registro
-DELETE /api/production-data/{id}   # Eliminar registro
+**Ejemplo de Request:**
+```bash
+curl -X POST http://localhost:8000/api/v1/maquina/produccion \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "cantidad_producida": 10,
+    "cantidad_buena": 9,
+    "cantidad_mala": 1
+  }'
 ```
 
-### KPI
-```
-GET    /api/kpi/                                          # Obtener KPIs de todos los equipos
-GET    /api/kpi/{equipmentId}                            # Obtener OEE completo de un equipo
-GET    /api/kpi/{equipmentId}/availability               # Obtener disponibilidad
-GET    /api/kpi/{equipmentId}/performance                # Obtener rendimiento
-GET    /api/kpi/{equipmentId}/quality                    # Obtener calidad
-```
-
-### Ejemplo de Respuesta KPI
-
+**Ejemplo de Response:**
 ```json
 {
-  "oee": 78.45,
-  "availability": 95.0,
-  "performance": 87.5,
-  "quality": 92.1,
-  "period": {
-    "start": "2025-11-07 00:00:00",
-    "end": "2025-11-07 23:59:59"
+  "success": true,
+  "data": {
+    "registro_id": "uuid",
+    "jornada": {
+      "total_producidas": 100,
+      "total_buenas": 92,
+      "total_malas": 8,
+      "progreso": 66.7
+    }
   }
 }
 ```
 
+Ver **[ARCHITECTURE.md](ARCHITECTURE.md#api-versionada)** para documentación completa de la API.
+
+---
+
 ## 🗄️ Base de Datos
 
-### Modelo de Datos
+### Tablas Principales
 
-#### Equipment
-```sql
-- id (PK)
-- name: string
-- code: string (único)
-- type: string
-- location: string
-- is_active: boolean
-- created_at, updated_at
-```
+1. **areas** - Áreas de la fábrica
+2. **maquinas** - Equipos/Máquinas
+3. **planes_maquina** - Plantillas de configuración
+4. **jornadas_produccion** - Turnos de trabajo (copia del plan)
+5. **eventos_parada_jornada** - Registro de paradas
+6. **registros_produccion** - Log de producción 1:1
+7. **registros_mantenimiento** - Mantenimientos
+8. **resultados_kpi_jornada** - KPIs pre-calculados
 
-#### Production Data
-```sql
-- id (PK)
-- equipment_id (FK)
-- planned_quantity: decimal
-- actual_quantity: decimal
-- ideal_cycle_time: decimal
-- actual_cycle_time: decimal
-- recorded_at: timestamp
-- created_at, updated_at
-```
+### Diagrama ER
 
-#### Quality Data
-```sql
-- id (PK)
-- equipment_id (FK)
-- total_pieces: integer
-- defective_pieces: integer
-- defect_reason: text (nullable)
-- recorded_at: timestamp
-- created_at, updated_at
-```
+Ver **[casos de usos.md](casos%20de%20usos.md#esquema-de-base-de-datos)** para el esquema completo en formato dbdiagram.io.
 
-#### Downtime Data
-```sql
-- id (PK)
-- equipment_id (FK)
-- reason: string
-- duration_minutes: integer
-- started_at: timestamp
-- ended_at: timestamp (nullable)
-- created_at, updated_at
-```
+---
 
-## 🏗️ Arquitectura
+## 🏗️ Arquitectura y Patrones
 
-### Patrones de Diseño Utilizados
-
-**Service Layer**: La lógica de negocio se centraliza en `KpiService` para:
-- Cálculo de OEE
-- Cálculo de Disponibilidad
-- Cálculo de Rendimiento
-- Cálculo de Calidad
-
-**Events & Broadcasting**: Se utilizan eventos de Laravel para:
-- Notificaciones en tiempo real
-- Sincronización entre clientes
-- Actualizaciones de dashboard
-
-**RESTful API**: Endpoints bien definidos siguiendo estándares REST
-
-### Flujo de Datos
+### Flujo de Datos (Ejemplo: Registro de Producción)
 
 ```
-Dashboard (Blade) 
+[Máquina]
+    ↓ POST /api/v1/maquina/produccion
+[ProduccionController] → [RegistrarProduccionRequest]
     ↓
-JavaScript (Chart.js)
+[ProduccionService::registrar()]
     ↓
-API REST (Controllers)
+[RegistroProduccionRepository::create()]
+[JornadaProduccionRepository::incrementCounters()]
     ↓
-Services (Lógica de negocio)
+[Event: ProduccionRegistrada]
     ↓
-Models (Eloquent ORM)
-    ↓
-Base de Datos
-    ↑
-Broadcasting (Pusher)
-    ↑
-Eventos de Laravel
+[Listener: BroadcastKpisEnTiempoReal]
+    ↓ WebSocket (Laravel Reverb)
+[Dashboard actualiza en vivo]
 ```
+
+Ver **[ARCHITECTURE.md](ARCHITECTURE.md)** para documentación completa de la arquitectura.
+
+---
 
 ## 🧪 Testing
 
-### Ejecutar Tests
-
 ```bash
-# Todos los tests
-composer test
-
-# Tests específicos
-php artisan test --filter=KpiTest
+# Ejecutar todos los tests
+php artisan test
 
 # Con cobertura
 php artisan test --coverage
+
+# Tests específicos
+php artisan test --filter=JornadaServiceTest
 ```
 
-### Estructura de Tests
+---
 
-```
-tests/
-├── Feature/         # Tests de características
-│   └── ExampleTest.php
-└── Unit/           # Tests unitarios
-    └── ExampleTest.php
-```
+## 📋 Checklist de Implementación
+
+Ver **[plan-de-accion-check.md](plan-de-accion-check.md)** para el plan completo de desarrollo con checkboxes.
+
+**Fases:**
+- ✅ Fase 0: Documentación (Completado)
+- 🔲 Fase 1: Base de Datos y Modelos
+- 🔲 Fase 2: Autenticación y Autorización
+- 🔲 Fase 3: Arquitectura (Repositories + Services)
+- 🔲 Fase 4: Form Requests
+- 🔲 Fase 5: Controladores
+- 🔲 Fase 6: Rutas
+- 🔲 Fase 7: Vistas (Blade + Tailwind)
+- 🔲 Fase 8: Eventos y WebSockets
+- 🔲 Fase 9: Jobs
+- 🔲 Fase 10: Emulador
+- 🔲 Fase 11: Diseño con Tailwind
+- 🔲 Fase 12: Gráficos
+- 🔲 Fase 13: Testing
+- 🔲 Fase 14: Deployment
+
+---
 
 ## 🤝 Contribuir
 
 1. Fork el proyecto
-2. Crear una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'feat: add AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abrir un Pull Request
+2. Crear rama: `git checkout -b feature/AmazingFeature`
+3. Commit: `git commit -m 'feat: add amazing feature'`
+4. Push: `git push origin feature/AmazingFeature`
+5. Abrir Pull Request
 
-### Convenciones de Commits
+### Convenciones
+- Seguir [Conventional Commits](https://www.conventionalcommits.org/)
+- Usar Laravel Pint para formateo: `composer run lint`
+- Escribir tests para nuevas features
 
-Seguimos [Conventional Commits](https://www.conventionalcommits.org/):
-
-```
-feat: agregar nueva característica
-fix: corregir un bug
-docs: cambios en documentación
-style: cambios de formato (espacios, punto y coma, etc)
-refactor: refactorización sin cambiar funcionalidad
-perf: mejora de rendimiento
-test: agregar o actualizar tests
-chore: cambios en build, dependencias, etc
-```
+---
 
 ## 📦 Dependencias Principales
 
-### Backend (Composer)
-- **laravel/framework**: Framework web
-- **laravel/sanctum**: Autenticación API
-- **pusher/pusher-php-server**: Broadcasting
-- **phpunit/phpunit**: Testing
-- **laravel/pint**: Code formatting
+### Backend
+- `laravel/framework` - Framework
+- `laravel/sanctum` - Autenticación API
+- `spatie/laravel-permission` - Roles y permisos
+- `laravel/reverb` - WebSockets
 
-### Frontend (npm)
-- **tailwindcss**: Utilidades CSS
-- **laravel-vite-plugin**: Integración Vite-Laravel
-- **laravel-echo**: Broadcasting cliente
-- **pusher-js**: Cliente de Pusher
-- **axios**: Cliente HTTP
-- **chart.js**: Gráficos
+### Frontend
+- `tailwindcss` - CSS utility-first
+- `alpinejs` - Framework JS ligero
+- `laravel-echo` - Cliente WebSocket
+- `chart.js` / `apexcharts` - Gráficos
 
-## 📝 Logs y Debugging
-
-### Monitorear Logs en Tiempo Real
-
-```bash
-php artisan pail
-```
-
-### Acceder a Tinker (REPL)
-
-```bash
-php artisan tinker
-
-# Ejemplo: Obtener todos los equipos
-$equipment = App\Models\Equipment::all();
-
-# Calcular KPI de un equipo
-$kpiService = app(App\Services\KpiService::class);
-$kpi = $kpiService->calculateOEE(1);
-dd($kpi);
-```
+---
 
 ## 🐛 Troubleshooting
 
@@ -517,41 +427,39 @@ dd($kpi);
 php artisan key:generate
 ```
 
-### Error: "Class not found"
+### Error: Base de Datos
 ```bash
-composer dump-autoload
-```
-
-### Error de BD
-```bash
-# Resetear base de datos
-php artisan migrate:reset
-php artisan migrate
-
-# O con seeders
+# Recrear base de datos
 php artisan migrate:fresh --seed
 ```
 
-### Assets no se cargan
+### WebSockets no funcionan
 ```bash
-# Reconstruir assets
-npm run build
+# Verificar que Reverb esté corriendo
+php artisan reverb:start
 
-# Limpiar caché de Vite
-rm -rf node_modules/.vite
-npm run dev
+# Verificar variables en .env
+BROADCAST_DRIVER=reverb
 ```
 
-## 📞 Soporte
-
-Para reportar bugs o solicitar features, abre un issue en el repositorio.
-
-## 📄 Licencia
-
-Este proyecto está bajo la licencia MIT. Ver el archivo [LICENSE](LICENSE) para más detalles.
+Ver **[INICIO.md](INICIO.md#🆘-soporte)** para más soluciones.
 
 ---
 
-**Desenvolvido con ❤️ usando Laravel y Tailwind CSS**
+## 📄 Licencia
 
-Última actualización: 7 de noviembre de 2025
+Este proyecto está bajo la licencia MIT.
+
+---
+
+## 📞 Soporte y Contacto
+
+- 📖 **Documentación**: Ver archivos `.md` en la raíz del proyecto
+- 🐛 **Issues**: Abrir issue en el repositorio
+- 💬 **Discusiones**: [GitHub Discussions]
+
+---
+
+**Desarrollado con ❤️ usando Laravel, Tailwind CSS y Laravel Reverb**
+
+📅 **Última actualización:** 9 de noviembre de 2025
