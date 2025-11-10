@@ -44,12 +44,13 @@ class WorkShiftController extends Controller
     public function create()
     {
         $equipment = Equipment::where('is_active', true)->get();
-        $activePlans = ProductionPlan::where('status', 'active')
-            ->orWhere('status', 'pending')
+        $plans = ProductionPlan::whereIn('status', ['active', 'pending'])
             ->with('equipment')
             ->get();
+        $operators = \App\Models\User::all();
+        $activeShifts = WorkShift::where('status', 'active')->get();
 
-        return view('work-shifts.create', compact('equipment', 'activePlans'));
+        return view('work-shifts.create', compact('equipment', 'plans', 'operators', 'activeShifts'));
     }
 
     /**
@@ -61,6 +62,7 @@ class WorkShiftController extends Controller
             'equipment_id' => 'required|exists:equipment,id',
             'plan_id' => 'nullable|exists:production_plans,id',
             'shift_type' => 'required|in:morning,afternoon,night',
+            'operator_id' => 'nullable|exists:users,id',
             'notes' => 'nullable|string',
         ]);
 
@@ -72,6 +74,7 @@ class WorkShiftController extends Controller
 
         if ($activeShift) {
             return redirect()->back()
+                ->withInput()
                 ->with('error', 'Ya existe una jornada activa para este equipo. Debe finalizarla primero.');
         }
 
@@ -79,7 +82,7 @@ class WorkShiftController extends Controller
             $validated['equipment_id'],
             $validated['plan_id'] ?? null,
             $validated['shift_type'],
-            Auth::id()
+            $validated['operator_id'] ?? Auth::id()
         );
 
         if (isset($validated['notes'])) {
@@ -96,7 +99,8 @@ class WorkShiftController extends Controller
     public function show(WorkShift $workShift)
     {
         $workShift->load(['equipment', 'plan', 'operator']);
-        return view('work-shifts.show', compact('workShift'));
+        $shift = $workShift; // Alias for view compatibility
+        return view('work-shifts.show', compact('shift'));
     }
 
     /**
