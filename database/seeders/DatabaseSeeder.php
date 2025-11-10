@@ -20,13 +20,20 @@ class DatabaseSeeder extends Seeder
             RolesAndPermissionsSeeder::class,
         ]);
 
-        // Seed KPI Dashboard data
+        // Seed factory structure
         $this->call([
-            EquipmentSeeder::class,
-            ProductionPlanSeeder::class,
-            ProductionDataSeeder::class,
-            QualityDataSeeder::class,
-            DowntimeDataSeeder::class,
+            AreaSeeder::class,
+            MaquinaSeeder::class,
+        ]);
+
+        // Seed production plans
+        $this->call([
+            PlanMaquinaSeeder::class,
+        ]);
+
+        // Seed production data (registros se crean dinámicamente)
+        $this->call([
+            RegistroProduccionSeeder::class,
         ]);
     }
 }
