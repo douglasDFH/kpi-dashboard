@@ -42,7 +42,7 @@
                 @endif
 
                 <!-- Form -->
-                <form method="POST" action="{{ route('production-plans.update', $productionPlan) }}" class="bg-white rounded-lg shadow-md p-6">
+                <form method="POST" action="{{ route('production-plans.update', $productionPlan) }}" class="bg-white rounded-lg shadow-md p-6" @submit="loading = true">
                     @csrf
                     @method('PUT')
 
@@ -263,9 +263,8 @@
                             </a>
                             <button 
                                 type="submit" 
-                                class="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition"
-                                x-bind:disabled="loading"
-                                @click="loading = true">
+                                class="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                :disabled="loading">
                                 <span x-show="!loading">Actualizar Plan</span>
                                 <span x-show="loading" class="flex items-center">
                                     <svg class="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">

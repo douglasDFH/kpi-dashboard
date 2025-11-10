@@ -48,7 +48,7 @@
                 @endif
 
                 <!-- Form -->
-                <form method="POST" action="{{ route('work-shifts.store') }}" class="bg-white rounded-lg shadow-md p-6">
+                <form method="POST" action="{{ route('work-shifts.store') }}" class="bg-white rounded-lg shadow-md p-6" @submit="loading = true">
                     @csrf
 
                     <div class="space-y-6">
@@ -266,9 +266,8 @@
                             </a>
                             <button 
                                 type="submit" 
-                                class="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition disabled:bg-gray-300"
-                                x-bind:disabled="loading || hasActiveShift"
-                                @click="loading = true">
+                                class="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+                                :disabled="loading || hasActiveShift">
                                 <span x-show="!loading">Iniciar Jornada</span>
                                 <span x-show="loading" class="flex items-center">
                                     <svg class="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
