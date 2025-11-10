@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KPI Dashboard - Indicadores en Tiempo Real</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body class="bg-gray-100">
     <div class="min-h-screen">
@@ -427,6 +426,64 @@
                 }
             }, 10000);
         });
+    </script>
+
+    <!-- Alpine.js Notification Component -->
+    <div x-data="notificationHandler()" 
+         x-show="show" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 transform translate-y-2"
+         x-transition:enter-end="opacity-100 transform translate-y-0"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed bottom-4 right-4 z-50 max-w-sm">
+        <div :class="'p-4 rounded-lg shadow-lg ' + bgColor">
+            <div class="flex items-center">
+                <svg class="h-6 w-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div class="flex-1">
+                    <p class="text-sm font-medium" x-text="message"></p>
+                </div>
+                <button @click="show = false" class="ml-3 text-gray-400 hover:text-gray-500">
+                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </path>
+                </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Alpine.js Notification Component
+        function notificationHandler() {
+            return {
+                show: false,
+                message: '',
+                bgColor: 'bg-blue-500 text-white',
+                notify(msg, type = 'info') {
+                    this.message = msg;
+                    this.bgColor = {
+                        'success': 'bg-green-500 text-white',
+                        'error': 'bg-red-500 text-white',
+                        'warning': 'bg-yellow-500 text-white',
+                        'info': 'bg-blue-500 text-white'
+                    }[type];
+                    this.show = true;
+                    setTimeout(() => { this.show = false; }, 5000);
+                }
+            }
+        }
+
+        // Exponer globalmente para uso con Echo
+        window.showNotification = function(message, type = 'info') {
+            // Trigger Alpine component
+            window.dispatchEvent(new CustomEvent('notify', { 
+                detail: { message, type } 
+            }));
+        };
     </script>
 </body>
 </html>
