@@ -7,12 +7,18 @@ use App\Models\Equipment;
 use App\Events\ProductionDataUpdated;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use App\Http\Controllers\Traits\AuthorizesPermissions;
 
 class DowntimeDataController extends Controller
 {
+    use AuthorizesPermissions;
+
     /**
      * Display a listing of the downtime data.
      */
+    public function index(Request $request)
+    {
+        $this->authorizePermission('downtime.view', 'No tienes permiso para ver tiempos muertos.');
     public function index(Request $request)
     {
         $query = DowntimeData::with('equipment');
@@ -45,8 +51,13 @@ class DowntimeDataController extends Controller
     /**
      * Show the form for creating new downtime data.
      */
+    /**
+     * Show the form for creating a new downtime data.
+     */
     public function create()
     {
+        $this->authorizePermission('downtime.create', 'No tienes permiso para crear tiempos muertos.');
+
         $equipment = Equipment::where('is_active', true)->get();
         return view('downtime.create', compact('equipment'));
     }
@@ -56,6 +67,8 @@ class DowntimeDataController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorizePermission('downtime.create', 'No tienes permiso para crear tiempos muertos.');
+
         $validated = $request->validate([
             'equipment_id' => 'required|exists:equipment,id',
             'start_time' => 'required|date',
@@ -87,6 +100,8 @@ class DowntimeDataController extends Controller
      */
     public function edit(DowntimeData $downtime)
     {
+        $this->authorizePermission('downtime.edit', 'No tienes permiso para editar tiempos muertos.');
+
         $equipment = Equipment::where('is_active', true)->get();
         return view('downtime.edit', compact('downtime', 'equipment'));
     }
@@ -96,6 +111,7 @@ class DowntimeDataController extends Controller
      */
     public function update(Request $request, DowntimeData $downtime)
     {
+        $this->authorizePermission('downtime.edit', 'No tienes permiso para actualizar tiempos muertos.');
         $validated = $request->validate([
             'equipment_id' => 'required|exists:equipment,id',
             'start_time' => 'required|date',
@@ -127,6 +143,7 @@ class DowntimeDataController extends Controller
      */
     public function destroy(DowntimeData $downtime)
     {
+        $this->authorizePermission('downtime.delete', 'No tienes permiso para eliminar tiempos muertos.');
         $downtime->delete();
 
         return redirect()->route('downtime.index')

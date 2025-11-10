@@ -56,8 +56,13 @@ class QualityDataController extends Controller
     /**
      * Show the form for creating a new quality inspection.
      */
+    /**
+     * Show the form for creating a new quality inspection.
+     */
     public function create()
     {
+        $this->authorizePermission('quality.create', 'No tienes permiso para crear datos de calidad.');
+
         $equipment = Equipment::where('is_active', true)->get();
         return view('quality.create', compact('equipment'));
     }
@@ -67,6 +72,8 @@ class QualityDataController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorizePermission('quality.create', 'No tienes permiso para crear datos de calidad.');
+
         $validated = $request->validate([
             'equipment_id' => 'required|exists:equipment,id',
             'total_inspected' => 'required|integer|min:1',
@@ -107,6 +114,8 @@ class QualityDataController extends Controller
      */
     public function edit(QualityData $quality)
     {
+        $this->authorizePermission('quality.edit', 'No tienes permiso para editar datos de calidad.');
+
         $equipment = Equipment::where('is_active', true)->get();
         return view('quality.edit', compact('quality', 'equipment'));
     }
@@ -116,6 +125,7 @@ class QualityDataController extends Controller
      */
     public function update(Request $request, QualityData $quality)
     {
+        $this->authorizePermission('quality.edit', 'No tienes permiso para actualizar datos de calidad.');
         $validated = $request->validate([
             'equipment_id' => 'required|exists:equipment,id',
             'total_inspected' => 'required|integer|min:1',
@@ -147,6 +157,7 @@ class QualityDataController extends Controller
      */
     public function destroy(QualityData $quality)
     {
+        $this->authorizePermission('quality.delete', 'No tienes permiso para eliminar datos de calidad.');
         $quality->delete();
 
         return redirect()->route('quality.index')
