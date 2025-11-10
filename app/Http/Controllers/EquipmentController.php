@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Equipment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class EquipmentController extends Controller
 {
@@ -12,6 +13,12 @@ class EquipmentController extends Controller
      */
     public function index()
     {
+        /** @var \App\Models\User $currentUser */
+        $currentUser = Auth::user();
+        if (!$currentUser->hasPermission('equipment.view')) {
+            abort(403, 'No tienes permiso para ver equipos.');
+        }
+
         $equipment = Equipment::orderBy('created_at', 'desc')->get();
         return view('equipment.index', compact('equipment'));
     }
@@ -21,6 +28,12 @@ class EquipmentController extends Controller
      */
     public function create()
     {
+        /** @var \App\Models\User $currentUser */
+        $currentUser = Auth::user();
+        if (!$currentUser->hasPermission('equipment.create')) {
+            abort(403, 'No tienes permiso para crear equipos.');
+        }
+
         return view('equipment.create');
     }
 
@@ -29,6 +42,12 @@ class EquipmentController extends Controller
      */
     public function store(Request $request)
     {
+        /** @var \App\Models\User $currentUser */
+        $currentUser = Auth::user();
+        if (!$currentUser->hasPermission('equipment.create')) {
+            abort(403, 'No tienes permiso para crear equipos.');
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:50|unique:equipment,code',
@@ -50,6 +69,12 @@ class EquipmentController extends Controller
      */
     public function edit(Equipment $equipment)
     {
+        /** @var \App\Models\User $currentUser */
+        $currentUser = Auth::user();
+        if (!$currentUser->hasPermission('equipment.edit')) {
+            abort(403, 'No tienes permiso para editar equipos.');
+        }
+
         return view('equipment.edit', compact('equipment'));
     }
 
@@ -58,6 +83,11 @@ class EquipmentController extends Controller
      */
     public function update(Request $request, Equipment $equipment)
     {
+        /** @var \App\Models\User $currentUser */
+        $currentUser = Auth::user();
+        if (!$currentUser->hasPermission('equipment.edit')) {
+            abort(403, 'No tienes permiso para actualizar equipos.');
+        }
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:50|unique:equipment,code,' . $equipment->id,
@@ -79,6 +109,12 @@ class EquipmentController extends Controller
      */
     public function destroy(Equipment $equipment)
     {
+        /** @var \App\Models\User $currentUser */
+        $currentUser = Auth::user();
+        if (!$currentUser->hasPermission('equipment.delete')) {
+            abort(403, 'No tienes permiso para eliminar equipos.');
+        }
+
         // Verificar si el equipo tiene datos asociados
         $hasProductionData = $equipment->productionData()->exists();
         $hasQualityData = $equipment->qualityData()->exists();

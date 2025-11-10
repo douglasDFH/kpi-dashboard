@@ -6,13 +6,18 @@ use App\Models\QualityData;
 use App\Models\Equipment;
 use App\Events\ProductionDataUpdated;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Traits\AuthorizesPermissions;
 
 class QualityDataController extends Controller
 {
+    use AuthorizesPermissions;
+
     /**
      * Display a listing of the quality inspections.
      */
     public function index(Request $request)
+    {
+        $this->authorizePermission('quality.view', 'No tienes permiso para ver datos de calidad.');
     {
         $query = QualityData::with('equipment')->orderBy('inspection_date', 'desc');
 

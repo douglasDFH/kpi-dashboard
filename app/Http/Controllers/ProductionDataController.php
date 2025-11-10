@@ -7,14 +7,19 @@ use App\Models\Equipment;
 use App\Events\ProductionDataUpdated;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use App\Http\Controllers\Traits\AuthorizesPermissions;
 
 class ProductionDataController extends Controller
 {
+    use AuthorizesPermissions;
+
     /**
      * Display a listing of the production data.
      */
     public function index(Request $request)
     {
+        $this->authorizePermission('production.view', 'No tienes permiso para ver datos de producción.');
+
         $query = ProductionData::with('equipment');
 
         // Filter by equipment
@@ -42,6 +47,8 @@ class ProductionDataController extends Controller
      */
     public function create()
     {
+        $this->authorizePermission('production.create', 'No tienes permiso para crear datos de producción.');
+
         $equipment = Equipment::where('is_active', true)->get();
         return view('production.create', compact('equipment'));
     }
@@ -51,6 +58,8 @@ class ProductionDataController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorizePermission('production.create', 'No tienes permiso para crear datos de producción.');
+
         $validated = $request->validate([
             'equipment_id' => 'required|exists:equipment,id',
             'planned_production' => 'required|integer|min:1',
@@ -82,6 +91,8 @@ class ProductionDataController extends Controller
      */
     public function edit(ProductionData $production)
     {
+        $this->authorizePermission('production.edit', 'No tienes permiso para editar datos de producción.');
+
         $equipment = Equipment::where('is_active', true)->get();
         return view('production.edit', compact('production', 'equipment'));
     }
@@ -91,6 +102,8 @@ class ProductionDataController extends Controller
      */
     public function update(Request $request, ProductionData $production)
     {
+        $this->authorizePermission('production.edit', 'No tienes permiso para actualizar datos de producción.');
+
         $validated = $request->validate([
             'equipment_id' => 'required|exists:equipment,id',
             'planned_production' => 'required|integer|min:1',
@@ -122,6 +135,8 @@ class ProductionDataController extends Controller
      */
     public function destroy(ProductionData $production)
     {
+        $this->authorizePermission('production.delete', 'No tienes permiso para eliminar datos de producción.');
+
         $production->delete();
 
         return redirect()->route('production.index')
