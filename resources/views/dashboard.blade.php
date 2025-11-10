@@ -107,6 +107,175 @@
 
         <!-- Main Content -->
         <main class="container mx-auto px-6 py-8">
+            <!-- Production Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm text-gray-600">Planes Activos</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ $activePlans }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm text-gray-600">Completados Hoy</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ $completedPlansToday }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-12 w-12 bg-yellow-100 rounded-lg flex items-center justify-center relative">
+                            <span class="flex h-3 w-3 absolute top-0 right-0">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-3 w-3 bg-yellow-500"></span>
+                            </span>
+                            <svg class="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm text-gray-600">Jornadas Activas</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ $activeShifts }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <svg class="h-6 w-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm text-gray-600">Eficiencia Promedio</p>
+                            <p class="text-2xl font-bold text-gray-900">
+                                @if($planVsReal->isNotEmpty())
+                                    {{ number_format($planVsReal->avg('efficiency'), 1) }}%
+                                @else
+                                    --
+                                @endif
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Plan vs Real Comparison -->
+            @if($planVsReal->isNotEmpty())
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h2 class="text-xl font-semibold mb-4 flex items-center">
+                    <svg class="h-6 w-6 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    Comparativa Plan vs Real (Últimos 7 Días)
+                </h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Planificado</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Real</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Diferencia</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Eficiencia</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @foreach($planVsReal as $data)
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    {{ \Carbon\Carbon::parse($data->date)->format('d/m/Y') }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                    {{ number_format($data->total_planned) }} unidades
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                    {{ number_format($data->total_actual) }} unidades
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    @php
+                                        $diff = $data->total_actual - $data->total_planned;
+                                        $color = $diff >= 0 ? 'text-green-600' : 'text-red-600';
+                                        $icon = $diff >= 0 ? '↑' : '↓';
+                                    @endphp
+                                    <span class="{{ $color }} font-medium">
+                                        {{ $icon }} {{ number_format(abs($diff)) }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    @php
+                                        $efficiency = $data->efficiency ?? 0;
+                                        $bgColor = $efficiency >= 100 ? 'bg-green-100 text-green-800' : 
+                                                   ($efficiency >= 80 ? 'bg-yellow-100 text-yellow-800' : 
+                                                   'bg-red-100 text-red-800');
+                                    @endphp
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $bgColor }}">
+                                        {{ number_format($efficiency, 1) }}%
+                                    </span>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            @endif
+
+            <!-- Top Equipment by Compliance -->
+            @if($topEquipment->isNotEmpty())
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h2 class="text-xl font-semibold mb-4 flex items-center">
+                    <svg class="h-6 w-6 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                    </svg>
+                    Top 5 Equipos por Cumplimiento (Últimos 30 Días)
+                </h2>
+                <div class="space-y-4">
+                    @foreach($topEquipment as $index => $eq)
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center text-white font-bold">
+                            {{ $index + 1 }}
+                        </div>
+                        <div class="flex-1 ml-4">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-sm font-medium text-gray-900">{{ $eq->name }} ({{ $eq->code }})</span>
+                                <span class="text-sm font-semibold text-gray-700">{{ number_format($eq->compliance, 1) }}%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                @php
+                                    $percentage = min($eq->compliance, 100);
+                                    $color = $percentage >= 100 ? 'bg-green-500' : 
+                                            ($percentage >= 80 ? 'bg-yellow-500' : 'bg-red-500');
+                                @endphp
+                                <div class="{{ $color }} h-2 rounded-full transition-all duration-500" style="width: {{ $percentage }}%"></div>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                <span>Planificado: {{ number_format($eq->total_planned) }}</span>
+                                <span>Real: {{ number_format($eq->total_actual) }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
             <!-- Quick Access Section -->
             <div class="bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg shadow-lg p-6 mb-6">
                 <h2 class="text-xl font-bold text-white mb-4">🚀 Accesos Rápidos - Gestión de Producción</h2>

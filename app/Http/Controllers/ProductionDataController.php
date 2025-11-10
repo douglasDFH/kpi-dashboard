@@ -20,7 +20,7 @@ class ProductionDataController extends Controller
     {
         $this->authorizePermission('production.view', 'No tienes permiso para ver datos de producción.');
 
-        $query = ProductionData::with('equipment');
+        $query = ProductionData::with(['equipment', 'plan', 'workShift']);
 
         // Filter by equipment
         if ($request->filled('equipment_id')) {
