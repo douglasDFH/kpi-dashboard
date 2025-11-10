@@ -10,10 +10,10 @@ trait AuthorizesPermissions
      * Verificar si el usuario actual tiene un permiso específico
      *
      * @param string $permission
-     * @param string $errorMessage
+     * @param string|null $errorMessage
      * @return void
      */
-    protected function authorizePermission(string $permission, string $errorMessage = null): void
+    protected function authorizePermission(string $permission, ?string $errorMessage = null): void
     {
         /** @var \App\Models\User $currentUser */
         $currentUser = Auth::user();

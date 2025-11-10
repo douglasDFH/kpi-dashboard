@@ -56,12 +56,14 @@
                         <h2 class="text-2xl font-bold text-gray-800">Tiempos Muertos (Downtime)</h2>
                         <p class="text-gray-600 mt-1">Gestiona los paros y tiempos de inactividad de equipos</p>
                     </div>
+                    @if(auth()->user()->hasPermission('downtime.create'))
                     <a href="{{ route('downtime.create') }}" class="inline-flex items-center px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition shadow-md">
                         <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                         </svg>
                         Registrar Tiempo Muerto
                     </a>
+                    @endif
                 </div>
             </div>
 
@@ -219,9 +221,12 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    @if(auth()->user()->hasPermission('downtime.edit'))
                                     <a href="{{ route('downtime.edit', $data) }}" class="text-blue-600 hover:text-blue-900 mr-3">
                                         Editar
                                     </a>
+                                    @endif
+                                    @if(auth()->user()->hasPermission('downtime.delete'))
                                     <form action="{{ route('downtime.destroy', $data) }}" method="POST" class="inline-block" onsubmit="return confirm('¿Está seguro de eliminar este registro?');">
                                         @csrf
                                         @method('DELETE')
@@ -229,6 +234,7 @@
                                             Eliminar
                                         </button>
                                     </form>
+                                    @endif
                                 </td>
                             </tr>
                         @empty

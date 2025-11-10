@@ -19,8 +19,7 @@ class DowntimeDataController extends Controller
     public function index(Request $request)
     {
         $this->authorizePermission('downtime.view', 'No tienes permiso para ver tiempos muertos.');
-    public function index(Request $request)
-    {
+        
         $query = DowntimeData::with('equipment');
 
         // Filter by equipment

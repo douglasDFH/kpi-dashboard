@@ -18,7 +18,7 @@ class QualityDataController extends Controller
     public function index(Request $request)
     {
         $this->authorizePermission('quality.view', 'No tienes permiso para ver datos de calidad.');
-    {
+        
         $query = QualityData::with('equipment')->orderBy('inspection_date', 'desc');
 
         // Filtro por equipo
@@ -53,9 +53,6 @@ class QualityDataController extends Controller
         return view('quality.index', compact('qualityData', 'equipment', 'defectTypes'));
     }
 
-    /**
-     * Show the form for creating a new quality inspection.
-     */
     /**
      * Show the form for creating a new quality inspection.
      */

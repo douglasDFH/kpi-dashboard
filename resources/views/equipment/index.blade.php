@@ -56,12 +56,14 @@
                         <h2 class="text-2xl font-bold text-gray-800">Equipos Industriales</h2>
                         <p class="text-gray-600 mt-1">Gestiona los equipos de la planta de producción</p>
                     </div>
+                    @if(auth()->user()->hasPermission('equipment.create'))
                     <a href="{{ route('equipment.create') }}" class="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition shadow-md">
                         <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                         </svg>
                         Nuevo Equipo
                     </a>
+                    @endif
                 </div>
             </div>
 
@@ -178,9 +180,12 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    @if(auth()->user()->hasPermission('equipment.edit'))
                                     <a href="{{ route('equipment.edit', $eq) }}" class="text-blue-600 hover:text-blue-900 mr-3">
                                         Editar
                                     </a>
+                                    @endif
+                                    @if(auth()->user()->hasPermission('equipment.delete'))
                                     <form action="{{ route('equipment.destroy', $eq) }}" method="POST" class="inline-block" onsubmit="return confirm('¿Está seguro de eliminar este equipo?');">
                                         @csrf
                                         @method('DELETE')
@@ -188,6 +193,7 @@
                                             Eliminar
                                         </button>
                                     </form>
+                                    @endif
                                 </td>
                             </tr>
                         @empty
