@@ -219,6 +219,15 @@
                     <!-- Production Chart -->
                     <div class="bg-white rounded-lg shadow-md p-6">
                         <h2 class="text-xl font-bold text-gray-800 mb-4">Progreso de Producción</h2>
+                        
+                        <!-- Debug Info (solo visible si hay problemas) -->
+                        <div id="chartDebug" class="hidden mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                            <p class="text-sm text-yellow-800">
+                                <strong>⚠️ Información de depuración:</strong>
+                                <br>Presiona F12 para ver la consola del navegador.
+                            </p>
+                        </div>
+                        
                         <canvas id="productionChart"></canvas>
                     </div>
                 </div>
@@ -323,6 +332,21 @@
     </div>
 
     <script>
+        // Debug: Verificar que Chart.js esté disponible
+        console.log('🔍 Verificando dependencias:');
+        console.log('Chart.js disponible:', typeof Chart !== 'undefined');
+        console.log('Alpine.js disponible:', typeof Alpine !== 'undefined');
+        
+        // Debug: Mostrar datos del shift
+        console.log('📊 Datos del shift:', {
+            id: {{ $shift->id }},
+            status: '{{ $shift->status }}',
+            plan_id: {{ $shift->plan_id ?? 'null' }},
+            actualProduction: {{ $shift->actual_production }},
+            targetQuantity: {{ $shift->target_snapshot['target_quantity'] ?? 0 }},
+            target_snapshot: @json($shift->target_snapshot)
+        });
+
         document.addEventListener('alpine:init', () => {
             Alpine.data('shiftMonitor', () => ({
                 // State
@@ -397,8 +421,29 @@
                 },
 
                 initCharts() {
+                    console.log('📈 Inicializando gráficos...');
+                    console.log('Valores actuales:', {
+                        actualProduction: this.actualProduction,
+                        targetQuantity: this.targetQuantity,
+                        goodUnits: this.goodUnits,
+                        defectiveUnits: this.defectiveUnits
+                    });
+
                     // Production Progress Chart
                     const ctxProd = document.getElementById('productionChart');
+                    
+                    if (!ctxProd) {
+                        console.error('❌ Canvas productionChart no encontrado');
+                        return;
+                    }
+                    
+                    if (typeof Chart === 'undefined') {
+                        console.error('❌ Chart.js no está disponible');
+                        return;
+                    }
+                    
+                    console.log('✅ Canvas encontrado, creando gráfico...');
+                    
                     this.productionChart = new Chart(ctxProd, {
                         type: 'bar',
                         data: {
