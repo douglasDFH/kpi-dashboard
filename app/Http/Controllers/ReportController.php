@@ -10,9 +10,11 @@ use App\Services\KpiService;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Http\Controllers\Traits\AuthorizesPermissions;
 
 class ReportController extends Controller
 {
+    use AuthorizesPermissions;
     protected $kpiService;
 
     public function __construct(KpiService $kpiService)
@@ -25,6 +27,8 @@ class ReportController extends Controller
      */
     public function index()
     {
+        $this->authorizePermission('reports.view', 'No tienes permiso para ver reportes.');
+        
         $equipment = Equipment::where('is_active', true)->get();
         return view('reports.index', compact('equipment'));
     }
@@ -254,6 +258,8 @@ class ReportController extends Controller
      */
     public function generateCustomReport(Request $request)
     {
+        $this->authorizePermission('reports.view', 'No tienes permiso para generar reportes.');
+        
         $validated = $request->validate([
             'equipment_ids' => 'required|array|min:1',
             'equipment_ids.*' => 'exists:equipment,id',
@@ -347,6 +353,8 @@ class ReportController extends Controller
      */
     public function exportCustomReport(Request $request)
     {
+        $this->authorizePermission('reports.export', 'No tienes permiso para exportar reportes.');
+        
         $validated = $request->validate([
             'format' => 'required|in:pdf,excel,csv',
         ]);

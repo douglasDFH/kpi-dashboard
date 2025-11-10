@@ -5,14 +5,19 @@ namespace App\Http\Controllers;
 use App\Models\AuditLog;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Traits\AuthorizesPermissions;
 
 class AuditLogController extends Controller
 {
+    use AuthorizesPermissions;
+    
     /**
      * Display a listing of audit logs.
      */
     public function index(Request $request)
     {
+        $this->authorizePermission('audit.view', 'No tienes permiso para ver auditorías.');
+        
         $query = AuditLog::with('user');
 
         // Filtro por usuario
@@ -66,6 +71,8 @@ class AuditLogController extends Controller
      */
     public function show(AuditLog $auditLog)
     {
+        $this->authorizePermission('audit.view', 'No tienes permiso para ver detalles de auditoría.');
+        
         $auditLog->load('user');
         return view('audit.show', compact('auditLog'));
     }
