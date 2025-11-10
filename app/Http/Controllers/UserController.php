@@ -128,6 +128,7 @@ class UserController extends Controller
         ]);
 
         $oldValues = $user->toArray();
+        $oldPermissions = $user->customPermissions->pluck('name')->toArray();
 
         if ($request->filled('password')) {
             $validated['password'] = Hash::make($validated['password']);
@@ -146,14 +147,17 @@ class UserController extends Controller
             $user->customPermissions()->sync([]);
         }
 
-        // Registrar en auditoría
+        // Obtener nuevos permisos después de sincronizar
+        $newPermissions = $user->customPermissions()->get()->pluck('name')->toArray();
+
+        // Registrar en auditoría con información de permisos
         AuditLog::logAction(
             'updated',
             User::class,
             $user->id,
-            "Usuario actualizado: {$user->name}",
-            $oldValues,
-            $user->fresh()->toArray()
+            "Usuario actualizado: {$user->name} - Permisos personalizados modificados",
+            array_merge($oldValues, ['custom_permissions' => $oldPermissions]),
+            array_merge($user->fresh()->toArray(), ['custom_permissions' => $newPermissions])
         );
 
         return redirect()->route('users.index')

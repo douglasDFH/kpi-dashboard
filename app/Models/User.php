@@ -99,17 +99,16 @@ class User extends Authenticatable
 
     /**
      * Verificar si el usuario tiene un permiso específico
-     * Primero verifica permisos personalizados, luego permisos del rol
+     * Si tiene permisos personalizados, SOLO usa esos (no los del rol)
+     * Si NO tiene permisos personalizados, usa los permisos del rol
      */
     public function hasPermission(string $permissionName): bool
     {
-        // Verificar si tiene el permiso personalizado asignado
-        $hasCustomPermission = $this->customPermissions()
-            ->where('name', $permissionName)
-            ->exists();
-        
-        if ($hasCustomPermission) {
-            return true;
+        // Si el usuario tiene permisos personalizados, SOLO usar esos
+        if ($this->customPermissions()->exists()) {
+            return $this->customPermissions()
+                ->where('name', $permissionName)
+                ->exists();
         }
 
         // Si no tiene permisos personalizados, verificar permisos del rol
