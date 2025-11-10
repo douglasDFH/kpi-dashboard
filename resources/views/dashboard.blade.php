@@ -107,6 +107,46 @@
 
         <!-- Main Content -->
         <main class="container mx-auto px-6 py-8">
+            <!-- Quick Access Section -->
+            <div class="bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg shadow-lg p-6 mb-6">
+                <h2 class="text-xl font-bold text-white mb-4">🚀 Accesos Rápidos - Gestión de Producción</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <a href="{{ route('production-plans.index') }}" class="bg-white hover:bg-gray-50 rounded-lg p-4 transition group">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition">
+                                <span class="text-2xl">📋</span>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-lg font-bold text-gray-900">Planes de Producción</h3>
+                                <p class="text-sm text-gray-600">Gestiona y planifica la producción</p>
+                            </div>
+                            <div class="ml-auto">
+                                <svg class="h-6 w-6 text-gray-400 group-hover:text-blue-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
+                        </div>
+                    </a>
+
+                    <a href="{{ route('work-shifts.index') }}" class="bg-white hover:bg-gray-50 rounded-lg p-4 transition group">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition">
+                                <span class="text-2xl">⏱️</span>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-lg font-bold text-gray-900">Jornadas de Trabajo</h3>
+                                <p class="text-sm text-gray-600">Monitorea jornadas en tiempo real</p>
+                            </div>
+                            <div class="ml-auto">
+                                <svg class="h-6 w-6 text-gray-400 group-hover:text-purple-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
             <!-- Equipment Selector -->
             <div class="bg-white rounded-lg shadow-md p-6 mb-6">
                 <h2 class="text-xl font-semibold mb-4">Seleccionar Equipo</h2>
