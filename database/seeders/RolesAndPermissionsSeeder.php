@@ -165,24 +165,26 @@ class RolesAndPermissionsSeeder extends Seeder
             }
         }
 
-        // 4. ACTUALIZAR USUARIO EXISTENTE Y CREAR SUPERADMIN
+        // 4. CREAR USUARIO SUPERADMIN Y OTROS USUARIOS
         $superAdminRole = DB::table('roles')->where('name', 'superadmin')->first();
-
-        // Actualizar usuario test@example.com a SuperAdmin
-        DB::table('users')->where('email', 'test@example.com')->update([
-            'name' => 'SuperAdmin',
-            'email' => 'admin@ecoplast.com',
-            'role_id' => $superAdminRole->id,
-            'is_active' => true,
-            'position' => 'Super Administrador',
-            'updated_at' => now(),
-        ]);
-
-        // Crear usuarios de ejemplo para cada rol
         $adminRole = DB::table('roles')->where('name', 'admin')->first();
         $gerenteRole = DB::table('roles')->where('name', 'gerente')->first();
         $supervisorRole = DB::table('roles')->where('name', 'supervisor')->first();
 
+        // Crear usuario SuperAdmin
+        DB::table('users')->insert([
+            'name' => 'SuperAdmin',
+            'email' => 'admin@ecoplast.com',
+            'password' => Hash::make('123456'),
+            'role_id' => $superAdminRole->id,
+            'is_active' => true,
+            'position' => 'Super Administrador',
+            'phone' => '+51 999 999 999',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Crear usuarios de ejemplo para cada rol
         $exampleUsers = [
             [
                 'name' => 'Carlos Administrador',

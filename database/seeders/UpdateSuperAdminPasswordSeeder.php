@@ -15,12 +15,16 @@ class UpdateSuperAdminPasswordSeeder extends Seeder
     public function run(): void
     {
         // Update SuperAdmin password to 123456
-        User::where('email', 'admin@ecoplast.com')->update([
-            'password' => Hash::make('123456'),
-            'updated_at' => now()
-        ]);
-
-        $this->command->info('✅ Contraseña del SuperAdmin actualizada exitosamente a: 123456');
-        $this->command->info('📧 Email: admin@ecoplast.com');
+        $user = User::where('email', 'admin@ecoplast.com')->first();
+        
+        if ($user) {
+            $user->update([
+                'password' => Hash::make('123456'),
+                'updated_at' => now()
+            ]);
+            $this->command->info('✅ Contraseña del SuperAdmin actualizada exitosamente a: 123456');
+        } else {
+            $this->command->warn('⚠️  Usuario admin@ecoplast.com no encontrado');
+        }
     }
 }
