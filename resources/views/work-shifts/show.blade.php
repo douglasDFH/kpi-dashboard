@@ -451,7 +451,7 @@
                     this.submitting = true;
 
                     try {
-                        const response = await fetch('{{ route('work-shifts.recordProduction', $shift) }}', {
+                        const response = await fetch('{{ route('work-shifts.record-production', $shift) }}', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
