@@ -100,10 +100,45 @@ class WorkShift extends Model
             'status' => 'completed',
         ]);
 
+        // Crear registro automático en production_data
+        if ($this->actual_production > 0) {
+            $this->createProductionDataRecord();
+        }
+
         // Si hay plan y se completó el objetivo, marcar plan como completado
         if ($this->plan && $this->actual_production >= $this->plan->target_quantity) {
             $this->plan->complete();
         }
+    }
+
+    /**
+     * Crear registro en production_data automáticamente
+     */
+    protected function createProductionDataRecord(): void
+    {
+        // Calcular cycle_time en minutos
+        $duration = $this->start_time->diffInMinutes($this->end_time);
+        $cycleTime = $this->actual_production > 0 
+            ? round($duration / $this->actual_production, 2)
+            : 0;
+
+        // Obtener planned_production desde el snapshot del plan (si existe)
+        $plannedProduction = 0;
+        if ($this->target_snapshot && isset($this->target_snapshot['target_quantity'])) {
+            $plannedProduction = $this->target_snapshot['target_quantity'];
+        }
+
+        ProductionData::create([
+            'equipment_id' => $this->equipment_id,
+            'plan_id' => $this->plan_id,
+            'work_shift_id' => $this->id,
+            'planned_production' => $plannedProduction,
+            'actual_production' => $this->actual_production,
+            'good_units' => $this->good_units,
+            'defective_units' => $this->defective_units,
+            'cycle_time' => $cycleTime,
+            'production_date' => $this->start_time,
+        ]);
     }
 
     /**

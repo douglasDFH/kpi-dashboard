@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\WorkShift;
 use App\Models\Equipment;
 use App\Models\ProductionPlan;
-use App\Models\ProductionData;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -114,35 +113,8 @@ class WorkShiftController extends Controller
                 ->with('error', 'Esta jornada ya ha sido finalizada.');
         }
 
-        // Finalizar la jornada
+        // Finalizar la jornada (crea ProductionData automáticamente en el modelo)
         $workShift->endShift();
-
-        // Crear registro automático en production_data
-        if ($workShift->actual_production > 0) {
-            // Calcular cycle_time en minutos
-            $duration = $workShift->start_time->diffInMinutes($workShift->end_time);
-            $cycleTime = $workShift->actual_production > 0 
-                ? round($duration / $workShift->actual_production, 2)
-                : 0;
-
-            // Obtener planned_production desde el snapshot del plan (si existe)
-            $plannedProduction = 0;
-            if ($workShift->target_snapshot && isset($workShift->target_snapshot['target_quantity'])) {
-                $plannedProduction = $workShift->target_snapshot['target_quantity'];
-            }
-
-            ProductionData::create([
-                'equipment_id' => $workShift->equipment_id,
-                'plan_id' => $workShift->plan_id,
-                'work_shift_id' => $workShift->id,
-                'planned_production' => $plannedProduction,
-                'actual_production' => $workShift->actual_production,
-                'good_units' => $workShift->good_units,
-                'defective_units' => $workShift->defective_units,
-                'cycle_time' => $cycleTime,
-                'production_date' => $workShift->start_time,
-            ]);
-        }
 
         return redirect()->route('work-shifts.show', $workShift)
             ->with('success', 'Jornada finalizada y datos de producción registrados exitosamente.');
