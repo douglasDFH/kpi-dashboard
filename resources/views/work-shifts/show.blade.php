@@ -275,7 +275,8 @@
                                         type="number" 
                                         x-model="form.quantity"
                                         min="1"
-                                        class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                        @if($shift->status == 'pending_registration') readonly @endif
+                                        class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 @if($shift->status == 'pending_registration') bg-gray-100 @endif"
                                         placeholder="100"
                                         required>
                                 </div>
@@ -290,7 +291,8 @@
                                         @input="form.defective_units = Math.max(0, form.quantity - form.good_units)"
                                         min="0"
                                         :max="form.quantity"
-                                        class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                        @if($shift->status == 'pending_registration') readonly @endif
+                                        class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 @if($shift->status == 'pending_registration') bg-gray-100 @endif"
                                         placeholder="95"
                                         required>
                                 </div>
@@ -305,13 +307,14 @@
                                         @input="form.good_units = Math.max(0, form.quantity - form.defective_units)"
                                         min="0"
                                         :max="form.quantity"
-                                        class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                        @if($shift->status == 'pending_registration') readonly @endif
+                                        class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 @if($shift->status == 'pending_registration') bg-gray-100 @endif"
                                         placeholder="5"
                                         required>
                                 </div>
 
-                                <div class="p-3 bg-gray-50 rounded-lg">
-                                    <p class="text-xs text-gray-600">
+                                <div class="p-3 rounded-lg" :class="isFormValid ? 'bg-green-50' : 'bg-gray-50'">
+                                    <p class="text-xs" :class="isFormValid ? 'text-green-700' : 'text-gray-600'">
                                         <strong>Validación:</strong><br>
                                         Total = Buenas + Defectuosas<br>
                                         <span x-text="form.quantity"></span> = 
@@ -319,6 +322,9 @@
                                         <span x-text="form.defective_units"></span>
                                         <span x-show="!isFormValid" class="text-red-600 block mt-1">
                                             ⚠️ Los valores no coinciden
+                                        </span>
+                                        <span x-show="isFormValid" class="text-green-600 block mt-1">
+                                            ✅ Los valores son correctos
                                         </span>
                                     </p>
                                 </div>
@@ -403,7 +409,7 @@
                     defective_units: {{ $shift->status == 'pending_registration' ? $shift->defective_units : 0 }}
                 },
                 submitting: false,
-                registered: {{ $shift->status == 'pending_registration' ? 'false' : 'true' }},
+                registered: false,
                 
                 // Alert
                 alert: {
