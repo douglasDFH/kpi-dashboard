@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\WorkShift;
 use App\Models\Equipment;
 use App\Models\ProductionPlan;
+use App\Jobs\SimulateProduction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -89,8 +90,11 @@ class WorkShiftController extends Controller
             $shift->update(['notes' => $validated['notes']]);
         }
 
+        // Iniciar simulación de producción automática
+        dispatch(new SimulateProduction($shift))->delay(now()->addSeconds(5));
+
         return redirect()->route('work-shifts.show', $shift)
-            ->with('success', 'Jornada de trabajo iniciada exitosamente.');
+            ->with('success', 'Jornada de trabajo iniciada exitosamente. La producción comenzará automáticamente.');
     }
 
     /**

@@ -235,10 +235,36 @@
                 </div>
 
                 <!-- Production Recording (Only for Active Shifts) -->
-                @if($shift->status == 'active')
+                @if($shift->status == 'active' || $shift->status == 'pending_registration')
                     <div class="lg:col-span-1">
                         <div class="bg-white rounded-lg shadow-md p-6 sticky top-6">
-                            <h2 class="text-xl font-bold text-gray-800 mb-4">📊 Registrar Producción</h2>
+                            @if($shift->status == 'pending_registration')
+                                <div class="mb-4 p-4 bg-green-50 border-l-4 border-green-500 rounded">
+                                    <div class="flex">
+                                        <div class="flex-shrink-0">
+                                            <svg class="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                            </svg>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-sm font-medium text-green-800">
+                                                ✅ Producción completada al 100%
+                                            </p>
+                                            <p class="text-xs text-green-700 mt-1">
+                                                Los datos se han cargado automáticamente. Solo haz clic en "Registrar" para finalizar.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                            
+                            <h2 class="text-xl font-bold text-gray-800 mb-4">
+                                @if($shift->status == 'pending_registration')
+                                    ✅ Confirmar Producción
+                                @else
+                                    📊 Registrar Producción
+                                @endif
+                            </h2>
                             
                             <form @submit.prevent="recordProduction" class="space-y-4">
                                 <div>
@@ -299,9 +325,20 @@
 
                                 <button 
                                     type="submit" 
-                                    :disabled="!isFormValid || submitting"
-                                    class="w-full px-4 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white font-medium rounded-lg transition">
-                                    <span x-show="!submitting">Registrar</span>
+                                    :disabled="(!isFormValid || submitting) && !registered"
+                                    :class="{
+                                        'bg-green-500 hover:bg-green-600': !registered,
+                                        'bg-red-500 hover:bg-red-600': registered,
+                                        'bg-gray-300': !isFormValid || submitting
+                                    }"
+                                    class="w-full px-4 py-3 text-white font-medium rounded-lg transition">
+                                    <span x-show="!submitting && !registered">✅ Registrar Producción</span>
+                                    <span x-show="registered" class="flex items-center justify-center">
+                                        <svg class="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                        </svg>
+                                        ✅ Registrado
+                                    </span>
                                     <span x-show="submitting" class="flex items-center justify-center">
                                         <svg class="animate-spin h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24">
                                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -361,11 +398,12 @@
                 
                 // Form
                 form: {
-                    quantity: 0,
-                    good_units: 0,
-                    defective_units: 0
+                    quantity: {{ $shift->status == 'pending_registration' ? $shift->actual_production : 0 }},
+                    good_units: {{ $shift->status == 'pending_registration' ? $shift->good_units : 0 }},
+                    defective_units: {{ $shift->status == 'pending_registration' ? $shift->defective_units : 0 }}
                 },
                 submitting: false,
+                registered: {{ $shift->status == 'pending_registration' ? 'false' : 'true' }},
                 
                 // Alert
                 alert: {
@@ -515,6 +553,9 @@
                             this.goodUnits = data.data.good_units;
                             this.defectiveUnits = data.data.defective_units;
 
+                            // Cambiar botón a rojo (registrado)
+                            this.registered = true;
+
                             // Update chart
                             this.productionChart.data.datasets[0].data = [
                                 this.actualProduction,
@@ -554,14 +595,34 @@
                 },
 
                 listenForUpdates() {
-                    // Echo listener for real-time updates
-                    // window.Echo.channel('work-shift.{{ $shift->id }}')
-                    //     .listen('ProductionRecorded', (e) => {
-                    //         this.actualProduction = e.actual_production;
-                    //         this.goodUnits = e.good_units;
-                    //         this.defectiveUnits = e.defective_units;
-                    //         this.updateChart();
-                    //     });
+                    console.log('👂 Escuchando actualizaciones en tiempo real...');
+                    
+                    window.Echo.channel('work-shift.{{ $shift->id }}')
+                        .listen('.production.updated', (e) => {
+                            console.log('📡 Actualización recibida:', e);
+                            
+                            // Actualizar datos
+                            this.actualProduction = e.actual_production;
+                            this.goodUnits = e.good_units;
+                            this.defectiveUnits = e.defective_units;
+                            
+                            // Actualizar gráfico
+                            this.productionChart.data.datasets[0].data = [
+                                this.actualProduction,
+                                Math.max(0, this.targetQuantity - this.actualProduction),
+                                this.goodUnits,
+                                this.defectiveUnits
+                            ];
+                            this.productionChart.update();
+                            
+                            // Si llegó a pending_registration, recargar página para mostrar formulario prellenado
+                            if (e.status === 'pending_registration') {
+                                console.log('✅ Producción completada al 100%');
+                                setTimeout(() => {
+                                    location.reload();
+                                }, 2000);
+                            }
+                        });
                 }
             }));
         });
