@@ -33,4 +33,38 @@ class Equipment extends Model
     {
         return $this->hasMany(DowntimeData::class);
     }
+
+    public function productionPlans(): HasMany
+    {
+        return $this->hasMany(ProductionPlan::class);
+    }
+
+    public function workShifts(): HasMany
+    {
+        return $this->hasMany(WorkShift::class);
+    }
+
+    /**
+     * Obtener el plan activo actual
+     */
+    public function getActivePlan(): ?ProductionPlan
+    {
+        return $this->productionPlans()
+            ->where('status', 'active')
+            ->whereDate('start_date', '<=', now())
+            ->whereDate('end_date', '>=', now())
+            ->first();
+    }
+
+    /**
+     * Obtener la jornada activa actual
+     */
+    public function getActiveShift(): ?WorkShift
+    {
+        return $this->workShifts()
+            ->where('status', 'active')
+            ->whereNull('end_time')
+            ->latest()
+            ->first();
+    }
 }
