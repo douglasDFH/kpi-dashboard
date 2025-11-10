@@ -4,11 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Equipment;
 use App\Models\ProductionData;
+use App\Models\ProductionPlan;
+use App\Models\WorkShift;
 use App\Models\QualityData;
 use App\Models\DowntimeData;
 use App\Services\KpiService;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\Traits\AuthorizesPermissions;
 
@@ -82,8 +85,8 @@ class ReportController extends Controller
 
         $equipmentId = $request->equipment_id;
 
-        // Obtener datos de producción
-        $query = ProductionData::with('equipment')
+        // Obtener datos de producción con relaciones
+        $query = ProductionData::with(['equipment', 'plan', 'workShift'])
             ->whereBetween('production_date', [$startDate, $endDate])
             ->orderBy('production_date', 'desc');
 
@@ -92,6 +95,31 @@ class ReportController extends Controller
         }
 
         $productionData = $query->get();
+
+        // Obtener estadísticas de planes en el período
+        $plansQuery = ProductionPlan::with('equipment')
+            ->where(function($q) use ($startDate, $endDate) {
+                $q->whereBetween('start_date', [$startDate, $endDate])
+                  ->orWhereBetween('end_date', [$startDate, $endDate])
+                  ->orWhere(function($q2) use ($startDate, $endDate) {
+                      $q2->where('start_date', '<=', $startDate)
+                         ->where('end_date', '>=', $endDate);
+                  });
+            });
+
+        if ($equipmentId) {
+            $plansQuery->where('equipment_id', $equipmentId);
+        }
+
+        $plans = $plansQuery->get();
+        
+        $planStats = [
+            'total' => $plans->count(),
+            'completed' => $plans->where('status', 'completed')->count(),
+            'active' => $plans->where('status', 'active')->count(),
+            'cancelled' => $plans->where('status', 'cancelled')->count(),
+            'target_total' => $plans->sum('target_quantity'),
+        ];
 
         // Calcular totales
         $totals = [
@@ -115,7 +143,7 @@ class ReportController extends Controller
             ];
         })->values();
 
-        return view('reports.production', compact('productionData', 'equipment', 'startDate', 'endDate', 'totals', 'equipmentId', 'chartData'));
+        return view('reports.production', compact('productionData', 'equipment', 'startDate', 'endDate', 'totals', 'equipmentId', 'chartData', 'planStats', 'plans'));
     }
 
     /**
