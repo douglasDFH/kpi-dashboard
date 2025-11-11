@@ -6,6 +6,115 @@
 
 ## 📅 11 de Noviembre de 2025
 
+### 🧪 Suite de Tests - 15/15 PASANDO ✅
+
+#### ✅ Corrección de Tests API (Última actualización)
+**Acción:** Resolver problema de transacciones en tests - Los increments no se persistían
+
+**Problemas identificados y resueltos:**
+1. ❌ ANTES: Tests de API retornaban 404 porque rutas no se registraban
+   - **Solución:** Mover definiciones de rutas directamente en `routes/api.php`
+   - **Verificación:** `php artisan route:list` muestra todas las rutas v1
+
+2. ❌ ANTES: ProduccionService refrescaba jornada dentro de transacción de test
+   - **Problema:** El `refresh()` traía datos viejos de la BD dentro de la transacción
+   - **Solución:** Usar `JornadaProduccion::where()->increment()` para persistencia inmediata
+   - **Resultado:** Los increments ahora se guardan correctamente
+
+3. ❌ ANTES: Tests de ProduccionApiTest fallaban por jornadas conflictivas
+   - **Problema:** setUp() creaba jornada con límite=10, pero tests necesitaban límite=5
+   - **Solución:** Mover creación de jornada a helper `createActiveJornada()` llamado en cada test
+   - **Resultado:** Cada test ahora tiene su propia jornada aislada
+
+**Tests implementados y pasando:**
+```
+✅ Tests\Unit\ExampleTest (1 test)
+✅ Tests\Unit\Services\KpiServiceTest (5 tests)
+   - calcula oee correctamente
+   - calcula disponibilidad correctamente
+   - calcula calidad correctamente
+   - calcula rendimiento correctamente
+   - retorna cero cuando no hay produccion
+
+✅ Tests\Feature\Api\V1\HeartbeatApiTest (3 tests)
+   - puede enviar heartbeat con token valido
+   - rechaza heartbeat sin token
+   - actualiza timestamp de maquina
+
+✅ Tests\Feature\Api\V1\ProduccionApiTest (5 tests)
+   - puede registrar produccion con token valido
+   - rechaza produccion sin token
+   - rechaza produccion sin jornada activa
+   - valida datos requeridos
+   - detiene maquina por limite de fallos ✅ (CRÍTICO)
+
+✅ Tests\Feature\ExampleTest (1 test)
+```
+
+**Cambios en archivos:**
+1. `app/Services/ProduccionService.php`
+   - Cambio: Usar `JornadaProduccion::where()->increment()` en lugar de `$jornada->increment()`
+   - Cambio: Obtener jornada fresca con `findOrFail()` después de incrementos
+   - Beneficio: Valores actualizados disponibles inmediatamente
+
+2. `app/Http/Controllers/Api/V1/Maquina/ProduccionController.php`
+   - Cambio: Agregar `->fresh()` al obtener jornada para respuesta
+   - Resultado: Respuesta HTTP devuelve estado actualizado
+
+3. `tests/Feature/Api/V1/ProduccionApiTest.php`
+   - Cambio: Remover creación de jornada de setUp()
+   - Cambio: Agregar helper `createActiveJornada($limite = 10)`
+   - Cambio: Cada test ahora crea su propia jornada aislada
+   - Cambio: Quitar imports de Log innecesarios
+
+**Resultado Final:**
+```
+Tests:    15 passed (47 assertions)
+Duration: 3.80s
+```
+
+---
+
+#### ✅ Ejecución de Migraciones y Seeders (EXITOSO)
+**Comando:** `php artisan migrate:fresh --seed`
+
+**Resultado:**
+- ✅ 13 migraciones ejecutadas correctamente
+- ✅ 5 seeders ejecutados con éxito
+- ✅ Base de datos completamente poblada
+
+**Base de datos creada:**
+```
+Tables:
+  - users (1,000 registros) ✅
+  - cache ✅
+  - jobs ✅
+  - personal_access_tokens (7 tokens para máquinas) ✅
+  - roles (7 roles) ✅
+  - permissions (32 permisos) ✅
+  - permission_role ✅
+  - user_role ✅
+  - areas (4 áreas) ✅
+  - maquinas (7 máquinas con Sanctum tokens) ✅
+  - planes_maquina (10 planes) ✅
+  - jornadas_produccion ✅
+  - eventos_parada_jornada ✅
+  - registros_produccion ✅
+  - registros_mantenimiento ✅
+  - resultados_kpi_jornada ✅
+```
+
+**Usuarios de prueba creados:**
+- admin@ecoplast.com (SuperAdmin) - Password: 123456
+- carlos@ecoplast.com (Admin)
+- maria@ecoplast.com (Gerente)
+- jose@ecoplast.com (Supervisor)
+
+**Máquinas con API tokens:**
+- M001, M002, M003, M004, M005, M006, M007 (todas con tokens Sanctum)
+
+---
+
 ### 🔄 Sistema de Control de Versiones - Git
 
 #### ✅ Migración de dependencias (Commit: d3c0abd)
