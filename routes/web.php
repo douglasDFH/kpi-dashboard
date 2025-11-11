@@ -1,14 +1,14 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Admin\AreaController;
 use App\Http\Controllers\Admin\MaquinaController;
 use App\Http\Controllers\Admin\PlanMaquinaController;
-use App\Http\Controllers\Admin\AreaController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Supervisor\JornadaController;
 use App\Http\Controllers\Supervisor\MantenimientoController;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 
 // Authentication Routes
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login')->middleware('guest');
