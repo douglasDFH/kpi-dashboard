@@ -13,13 +13,14 @@ class ProduccionRegistrada implements ShouldBroadcastNow
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public string $maquinaId;
+
     public array $data;
 
     /**
      * Create a new event instance.
-     * 
-     * @param string $maquinaId UUID de la máquina
-     * @param array $data Datos de producción actualizados
+     *
+     * @param  string  $maquinaId  UUID de la máquina
+     * @param  array  $data  Datos de producción actualizados
      */
     public function __construct(string $maquinaId, array $data)
     {
