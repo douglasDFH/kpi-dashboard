@@ -2,24 +2,25 @@
 
 namespace Tests\Unit\Services;
 
-use PHPUnit\Framework\Attributes\Test;
-use Tests\TestCase;
+use App\Models\Area;
 use App\Models\JornadaProduccion;
 use App\Models\Maquina;
-use App\Models\Area;
 use App\Models\PlanMaquina;
 use App\Models\User;
 use App\Services\KpiService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
 
 class KpiServiceTest extends TestCase
 {
     use RefreshDatabase;
 
     protected KpiService $kpiService;
+
     protected JornadaProduccion $jornada;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -51,7 +52,7 @@ class KpiServiceTest extends TestCase
                 'total_unidades_producidas' => 60, // 60 unidades en 1800 segundos con ideal 30s = (60*30)/1800*100 = 100%
                 'total_unidades_buenas' => 57,
                 'total_unidades_malas' => 3,
-        ]);
+            ]);
     }
 
     #[Test]

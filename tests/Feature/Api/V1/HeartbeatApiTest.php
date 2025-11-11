@@ -2,11 +2,11 @@
 
 namespace Tests\Feature\Api\V1;
 
+use App\Models\Area;
+use App\Models\Maquina;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
-use App\Models\Maquina;
-use App\Models\Area;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class HeartbeatApiTest extends TestCase
 {
@@ -14,7 +14,7 @@ class HeartbeatApiTest extends TestCase
 
     protected Maquina $maquina;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -34,7 +34,7 @@ class HeartbeatApiTest extends TestCase
             '/api/v1/maquina/heartbeat',
             [],
             [
-                'Authorization' => 'Bearer ' . $this->maquina->token,
+                'Authorization' => 'Bearer '.$this->maquina->token,
             ]
         );
 
@@ -64,7 +64,7 @@ class HeartbeatApiTest extends TestCase
             '/api/v1/maquina/heartbeat',
             [],
             [
-                'Authorization' => 'Bearer ' . $this->maquina->token,
+                'Authorization' => 'Bearer '.$this->maquina->token,
             ]
         );
 

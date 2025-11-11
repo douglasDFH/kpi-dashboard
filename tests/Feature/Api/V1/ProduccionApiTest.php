@@ -2,24 +2,26 @@
 
 namespace Tests\Feature\Api\V1;
 
-use PHPUnit\Framework\Attributes\Test;
-use Tests\TestCase;
-use App\Models\Maquina;
-use App\Models\JornadaProduccion;
 use App\Models\Area;
+use App\Models\JornadaProduccion;
+use App\Models\Maquina;
 use App\Models\PlanMaquina;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
 
 class ProduccionApiTest extends TestCase
 {
     use RefreshDatabase;
 
     protected Maquina $maquina;
+
     protected JornadaProduccion $jornada;
+
     protected User $supervisor;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -92,8 +94,8 @@ class ProduccionApiTest extends TestCase
                     'total_malas',
                     'progreso',
                     'status',
-                ]
-            ]
+                ],
+            ],
         ]);
 
         // Verificar que se actualizó la jornada
