@@ -45,7 +45,7 @@ class ProduccionController extends Controller
             );
 
             // Obtener jornada actualizada para respuesta
-            $jornada = $registro->jornada;
+            $jornada = $registro->jornada->fresh();
 
             return response()->json([
                 'success' => true,

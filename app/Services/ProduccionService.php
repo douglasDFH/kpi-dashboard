@@ -73,13 +73,16 @@ class ProduccionService implements ProduccionServiceInterface
             'cantidad_mala' => $cantidadMala,
         ]);
 
-        // Actualizar contadores de la jornada (agregación en tiempo real)
-        $jornada->increment('total_unidades_producidas', $cantidadProducida);
-        $jornada->increment('total_unidades_buenas', $cantidadBuena);
-        $jornada->increment('total_unidades_malas', $cantidadMala);
+        // Actualizar contadores de la jornada (usando query builder para persistencia inmediata)
+        JornadaProduccion::where('id', $jornada->id)->increment('total_unidades_producidas', $cantidadProducida);
+        JornadaProduccion::where('id', $jornada->id)->increment('total_unidades_buenas', $cantidadBuena);
+        JornadaProduccion::where('id', $jornada->id)->increment('total_unidades_malas', $cantidadMala);
+
+        // Obtener jornada fresca con los valores actualizados
+        $jornada = JornadaProduccion::findOrFail($jornada->id);
 
         // Verificar límite de fallos
-        if ($this->verificarLimiteFallos($jornada->id)) {
+        if ($jornada->total_unidades_malas >= $jornada->limite_fallos_critico_copiado) {
             $this->detenerPorFallosCriticos($jornada->id);
         }
 

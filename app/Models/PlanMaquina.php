@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class PlanMaquina extends Model
 {
-    use SoftDeletes, HasUuids;
+    use SoftDeletes, HasUuids, HasFactory;
 
     protected $table = 'planes_maquina';
 

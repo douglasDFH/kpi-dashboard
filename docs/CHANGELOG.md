@@ -126,26 +126,45 @@ scripts/start-all.js (+compatibilidad Windows)
 
 ---
 
-#### ✅ Interfaz Web Emulador (Commit: b9f1fed)
-**Acción:** Crear interfaz para simular producción manualmente
+#### ✅ Refactor: ProduccionController simplificado (Commit: da5f22b)
+**Acción:** Reescribir controlador eliminando lógica de negocio
 
-**Archivos creados:**
-1. `app/Http/Controllers/EmuladorController.php`
-   - Método `index()`: Muestra grid de máquinas
-   - Método `emular()`: Procesa producción manual
-   - Validación de datos
-   - Integración con API
+**Cambios:**
+- ❌ ELIMINADO: Toda la lógica de registro, actualización de jornada, verificación de fallos
+- ✅ AGREGADO: Inyección de dependencia `ProduccionServiceInterface`
+- ✅ IMPLEMENTADO: Patrón controlador limpio
+  - Recibe `RegistrarProduccionRequest` validado
+  - Obtiene máquina autenticada
+  - Llama `$produccionService->registrarProduccion()`
+  - Retorna respuesta JSON
 
-2. `resources/views/emulador/index.blade.php`
-   - Grid responsivo de máquinas
-   - Estado de jornadas activas
-   - Formularios con Alpine.js
-   - Feedback de respuestas (éxito/error)
-   - Valores aleatorios tras envío exitoso
+**Resultado:**
+```php
+// ANTES (incorrecto):
+$registro = RegistroProduccion::create([...]);
+$jornada->update([...]);
+if ($jornada->total_unidades_malas >= ...) { ... }
 
-**Total:** 258 líneas de código
+// DESPUÉS (correcto):
+$registro = $this->produccionService->registrarProduccion(
+    maquinaId: $maquina->id,
+    cantidadProducida: $request->cantidad_producida,
+    cantidadBuena: $request->cantidad_buena,
+    cantidadMala: $request->cantidad_mala
+);
+```
+
+**Verificado:**
+- ✅ ProduccionService existe y tiene método `registrarProduccion()`
+- ✅ ProduccionService ya valida:
+  - Que jornada esté en status 'running' (NO pausa, NO crítica)
+  - Que cantidad_buena + cantidad_mala = cantidad_producida
+  - Límite de fallos críticos (caso de uso 4)
+  - Crea EventoParadaJornada si es necesario
 
 ---
+
+
 
 ### 📊 Resumen de la Sesión
 
