@@ -9,7 +9,7 @@
             </div>
             <p class="text-gray-600 mt-2">
                 <span class="font-semibold">{{ $jornada->maquina->codigo }}</span> • 
-                Jornada {{ $jornada->fecha_inicio->format('d/m/Y H:i') }}
+                Jornada {{ $jornada->inicio_real->format('d/m/Y H:i') }}
             </p>
         </div>
         <div class="text-right">
@@ -22,7 +22,7 @@
             </span>
             @if($jornada->status !== 'completed')
                 <div class="mt-4 text-sm text-gray-600">
-                    <span class="font-semibold">{{ now()->diffInMinutes($jornada->fecha_inicio) }}</span> minutos
+                    <span class="font-semibold">{{ now()->diffInMinutes($jornada->inicio_real) }}</span> minutos
                 </div>
             @endif
         </div>
@@ -35,7 +35,7 @@
                 <div>
                     <div class="text-blue-600 text-sm font-semibold uppercase tracking-wider">Tiempo</div>
                     <div class="text-3xl font-bold text-blue-900 mt-2">
-                        {{ $jornada->fecha_inicio->format('H:i') }}
+                        {{ $jornada->inicio_real->format('H:i') }}
                     </div>
                 </div>
                 <div class="text-5xl opacity-20">⏱</div>
@@ -47,7 +47,7 @@
                 <div>
                     <div class="text-purple-600 text-sm font-semibold uppercase tracking-wider">Producción</div>
                     <div class="text-3xl font-bold text-purple-900 mt-2">
-                        {{ $jornada->cantidad_producida ?? 0 }}
+                        {{ $jornada->total_unidades_producidas ?? 0 }}
                     </div>
                     <div class="text-xs text-purple-700 mt-1">unidades</div>
                 </div>
@@ -60,11 +60,11 @@
                 <div>
                     <div class="text-green-600 text-sm font-semibold uppercase tracking-wider">Conformes</div>
                     <div class="text-3xl font-bold text-green-900 mt-2">
-                        {{ $jornada->cantidad_buena ?? 0 }}
+                        {{ $jornada->total_unidades_buenas ?? 0 }}
                     </div>
                     <div class="text-xs text-green-700 mt-1">
-                        @if($jornada->cantidad_producida > 0)
-                            {{ round(($jornada->cantidad_buena ?? 0) / $jornada->cantidad_producida * 100, 1) }}%
+                        @if($jornada->total_unidades_producidas > 0)
+                            {{ round(($jornada->total_unidades_buenas ?? 0) / $jornada->total_unidades_producidas * 100, 1) }}%
                         @else
                             0%
                         @endif
@@ -79,11 +79,11 @@
                 <div>
                     <div class="text-red-600 text-sm font-semibold uppercase tracking-wider">Defectuosas</div>
                     <div class="text-3xl font-bold text-red-900 mt-2">
-                        {{ ($jornada->cantidad_producida ?? 0) - ($jornada->cantidad_buena ?? 0) }}
+                        {{ ($jornada->total_unidades_producidas ?? 0) - ($jornada->total_unidades_buenas ?? 0) }}
                     </div>
                     <div class="text-xs text-red-700 mt-1">
-                        @if($jornada->cantidad_producida > 0)
-                            {{ round(((($jornada->cantidad_producida ?? 0) - ($jornada->cantidad_buena ?? 0)) / $jornada->cantidad_producida) * 100, 1) }}%
+                        @if($jornada->total_unidades_producidas > 0)
+                            {{ round(((($jornada->total_unidades_producidas ?? 0) - ($jornada->total_unidades_buenas ?? 0)) / $jornada->total_unidades_producidas) * 100, 1) }}%
                         @else
                             0%
                         @endif
