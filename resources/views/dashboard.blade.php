@@ -1,4 +1,8 @@
 <x-layouts.app title="Dashboard KPI">
+@push('scripts')
+    @vite(['resources/js/echo.js'])
+@endpush
+
 <div class="min-h-screen bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Selector de Máquina -->
@@ -16,6 +20,18 @@
                         No hay máquinas disponibles
                     </div>
                 @endforelse
+            </div>
+        </div>
+
+        <!-- Contador de Máquinas Conectadas -->
+        <div class="mb-8 bg-white rounded-lg shadow p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Estado del Sistema</h2>
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse mr-3"></div>
+                    <span class="text-sm font-medium text-gray-900">Máquinas Conectadas</span>
+                </div>
+                <div class="text-2xl font-bold text-green-600" id="maquinas-conectadas">0</div>
             </div>
         </div>
 
@@ -235,6 +251,29 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     @endif
+
+    // Broadcasting para máquinas conectadas
+    if (window.Echo) {
+        console.log('✅ Echo disponible - Conectando a broadcasting...');
+
+        // Suscribirse al canal privado kpi-dashboard.v1
+        window.Echo.private('kpi-dashboard.v1')
+            .listen('.maquina.conectada', (e) => {
+                console.log('📡 Máquina conectada:', e);
+                
+                // Actualizar contador de máquinas conectadas
+                const contador = document.getElementById('maquinas-conectadas');
+                if (contador) {
+                    const currentCount = parseInt(contador.textContent) || 0;
+                    contador.textContent = currentCount + 1;
+                }
+            })
+            .error((error) => {
+                console.error('❌ Error en broadcasting:', error);
+            });
+    } else {
+        console.warn('⚠️ Echo no disponible. Broadcasting deshabilitado.');
+    }
 });
 </script>
 </x-layouts.app>
