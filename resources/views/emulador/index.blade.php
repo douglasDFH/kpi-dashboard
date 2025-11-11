@@ -3,164 +3,77 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-gray-800">
-                            🤖 Emulador de Máquinas
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold text-gray-800 mb-2">
+                            🤖 Seleccionar Máquina para Emular
                         </h2>
-                        <span class="text-sm text-gray-500">
-                            Simulación de producción en tiempo real
-                        </span>
+                        <p class="text-gray-600">
+                            Cada emulador simula UNA máquina individual con conexión WebSocket
+                        </p>
                     </div>
 
                     <!-- Grid de Máquinas -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        @foreach($maquinas as $maquina)
-                            <div class="border rounded-lg p-4 hover:shadow-md transition-shadow"
-                                 x-data="maquinaEmulador('{{ $maquina->id }}', '{{ $maquina->nombre }}')">
-                                
-                                <!-- Header -->
-                                <div class="flex justify-between items-start mb-4">
-                                    <div>
-                                        <h3 class="font-bold text-lg">{{ $maquina->nombre }}</h3>
-                                        <p class="text-xs text-gray-500">{{ $maquina->area->nombre ?? 'Sin área' }}</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        @foreach ($maquinas as $maquina)
+                            <a href="{{ route('emulador.show', $maquina->id) }}"
+                                class="border-2 border-gray-300 rounded-lg p-6 hover:border-blue-500 hover:shadow-lg transition-all group">
+
+                                <!-- Icono -->
+                                <div class="flex justify-center mb-4">
+                                    <div
+                                        class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                                        <span class="text-3xl">🏭</span>
                                     </div>
-                                    <span class="px-2 py-1 text-xs rounded-full
-                                        @if($maquina->status === 'running') bg-green-100 text-green-800
+                                </div>
+
+                                <!-- Info -->
+                                <div class="text-center">
+                                    <h3 class="font-bold text-lg text-gray-800 mb-1">
+                                        {{ $maquina->nombre }}
+                                    </h3>
+                                    <p class="text-sm text-gray-500 mb-3">
+                                        {{ $maquina->area->nombre ?? 'Sin área' }}
+                                    </p>
+                                    <span
+                                        class="inline-block px-3 py-1 text-xs rounded-full
+                                        @if ($maquina->status === 'running') bg-green-100 text-green-800
                                         @elseif($maquina->status === 'stopped') bg-red-100 text-red-800
                                         @elseif($maquina->status === 'maintenance') bg-yellow-100 text-yellow-800
-                                        @else bg-gray-100 text-gray-800
-                                        @endif">
+                                        @else bg-gray-100 text-gray-800 @endif">
                                         {{ ucfirst($maquina->status) }}
                                     </span>
                                 </div>
 
-                                <!-- Estado de Jornada -->
-                                @if($maquina->jornadasProduccion->isNotEmpty())
-                                    @php $jornada = $maquina->jornadasProduccion->first(); @endphp
-                                    <div class="mb-4 p-3 bg-blue-50 rounded">
-                                        <p class="text-xs font-semibold text-blue-800 mb-1">Jornada Activa</p>
-                                        <div class="text-xs text-blue-700">
-                                            <p>Objetivo: {{ $jornada->objetivo_unidades_copiado }} unidades</p>
-                                            <p>Producidas: {{ $jornada->total_unidades_producidas }}</p>
-                                            <p>Progreso: {{ round(($jornada->total_unidades_producidas / $jornada->objetivo_unidades_copiado) * 100, 1) }}%</p>
-                                        </div>
-                                    </div>
-                                @else
-                                    <div class="mb-4 p-3 bg-yellow-50 rounded">
-                                        <p class="text-xs text-yellow-800">⚠️ No hay jornada activa</p>
-                                    </div>
-                                @endif
-
-                                <!-- Formulario de Emulación -->
-                                <form @submit.prevent="enviarProduccion" class="space-y-3">
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-700 mb-1">
-                                            Cantidad Producida
-                                        </label>
-                                        <input type="number" x-model="cantidadProducida" 
-                                               min="1" required
-                                               class="w-full px-3 py-2 border rounded-md text-sm">
-                                    </div>
-
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-700 mb-1">
-                                                Buenas
-                                            </label>
-                                            <input type="number" x-model="cantidadBuena" 
-                                                   min="0" required
-                                                   class="w-full px-3 py-2 border rounded-md text-sm">
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-700 mb-1">
-                                                Malas
-                                            </label>
-                                            <input type="number" x-model="cantidadMala" 
-                                                   min="0" required
-                                                   class="w-full px-3 py-2 border rounded-md text-sm">
-                                        </div>
-                                    </div>
-
-                                    <button type="submit" 
-                                            :disabled="enviando"
-                                            class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-2 rounded-md text-sm font-medium transition-colors">
-                                        <span x-show="!enviando">▶️ Enviar Producción</span>
-                                        <span x-show="enviando">⏳ Enviando...</span>
-                                    </button>
-                                </form>
-
-                                <!-- Log de Respuestas -->
-                                <div x-show="ultimaRespuesta" class="mt-4 p-2 rounded text-xs" 
-                                     :class="respuestaExitosa ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'">
-                                    <p class="font-semibold" x-text="respuestaExitosa ? '✓ Éxito' : '✗ Error'"></p>
-                                    <p x-text="ultimaRespuesta" class="mt-1"></p>
+                                <!-- Acción -->
+                                <div class="mt-4 text-center">
+                                    <span class="text-blue-600 font-semibold group-hover:text-blue-700">
+                                        Abrir Emulador →
+                                    </span>
                                 </div>
-                            </div>
+                            </a>
                         @endforeach
                     </div>
 
-                    @if($maquinas->isEmpty())
+                    @if ($maquinas->isEmpty())
                         <div class="text-center py-12">
-                            <p class="text-gray-500">No hay máquinas disponibles</p>
+                            <p class="text-gray-500 text-lg">No hay máquinas disponibles</p>
                         </div>
                     @endif
+
+                    <!-- Instrucciones -->
+                    <div class="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+                        <h3 class="font-bold text-blue-900 mb-3">📋 Instrucciones:</h3>
+                        <ol class="list-decimal list-inside space-y-2 text-sm text-blue-800">
+                            <li>Selecciona una máquina para abrir su emulador individual</li>
+                            <li>Haz clic en "🔌 Conectar" para establecer conexión WebSocket</li>
+                            <li>El dashboard verá la máquina conectada en tiempo real</li>
+                            <li>Usa "▶️ Modo Auto" para enviar producción cada 15 segundos automáticamente</li>
+                            <li>Modifica los valores entre envíos para simular producción variable</li>
+                            <li>Abre múltiples pestañas con diferentes máquinas para simular producción paralela</li>
+                        </ol>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-
-    @push('scripts')
-    <script>
-        function maquinaEmulador(maquinaId, nombre) {
-            return {
-                maquinaId: maquinaId,
-                nombre: nombre,
-                cantidadProducida: 10,
-                cantidadBuena: 9,
-                cantidadMala: 1,
-                enviando: false,
-                ultimaRespuesta: null,
-                respuestaExitosa: false,
-
-                enviarProduccion() {
-                    this.enviando = true;
-                    this.ultimaRespuesta = null;
-
-                    fetch('/emulador/emular', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                        },
-                        body: JSON.stringify({
-                            maquina_id: this.maquinaId,
-                            cantidad_producida: parseInt(this.cantidadProducida),
-                            cantidad_buena: parseInt(this.cantidadBuena),
-                            cantidad_mala: parseInt(this.cantidadMala)
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        this.respuestaExitosa = data.success;
-                        this.ultimaRespuesta = data.message;
-                        
-                        if (data.success) {
-                            // Generar nuevos valores aleatorios
-                            this.cantidadProducida = Math.floor(Math.random() * 5) + 8; // 8-12
-                            this.cantidadMala = Math.floor(Math.random() * 3); // 0-2
-                            this.cantidadBuena = this.cantidadProducida - this.cantidadMala;
-                        }
-                    })
-                    .catch(error => {
-                        this.respuestaExitosa = false;
-                        this.ultimaRespuesta = 'Error de red: ' + error.message;
-                    })
-                    .finally(() => {
-                        this.enviando = false;
-                    });
-                }
-            }
-        }
-    </script>
-    @endpush
 </x-layouts.app>
