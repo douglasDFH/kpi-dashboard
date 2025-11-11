@@ -84,7 +84,7 @@ class RegistrarProduccionRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         // Calcular cantidad_mala si no se proporciona
-        if (!$this->has('cantidad_mala') && $this->has('cantidad_producida') && $this->has('cantidad_buena')) {
+        if (! $this->has('cantidad_mala') && $this->has('cantidad_producida') && $this->has('cantidad_buena')) {
             $this->merge([
                 'cantidad_mala' => $this->cantidad_producida - $this->cantidad_buena,
             ]);

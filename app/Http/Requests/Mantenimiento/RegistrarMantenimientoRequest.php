@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests\Mantenimiento;
 
+use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User;
 
 class RegistrarMantenimientoRequest extends FormRequest
 {
@@ -14,9 +14,10 @@ class RegistrarMantenimientoRequest extends FormRequest
     public function authorize(): bool
     {
         $user = Auth::user();
-        if (!$user instanceof User) {
+        if (! $user instanceof User) {
             return false;
         }
+
         return $user->hasRole('supervisor');
     }
 
