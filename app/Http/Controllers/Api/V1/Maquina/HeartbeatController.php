@@ -11,20 +11,18 @@ class HeartbeatController extends Controller
 {
     /**
      * Keep-alive (heartbeat) desde la máquina
-     * 
+     *
      * POST /api/v1/maquina/heartbeat
-     * 
+     *
      * Actualiza el timestamp de última comunicación
-     * 
-     * @return JsonResponse
      */
     public function ping(): JsonResponse
     {
         try {
             // Obtener máquina autenticada
             $maquina = auth('sanctum')->user();
-            
-            if (!$maquina || !$maquina instanceof Maquina) {
+
+            if (! $maquina || ! $maquina instanceof Maquina) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Máquina no autenticada',
@@ -52,7 +50,7 @@ class HeartbeatController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Error en heartbeat: ' . $e->getMessage(),
+                'message' => 'Error en heartbeat: '.$e->getMessage(),
             ], 500);
         }
     }

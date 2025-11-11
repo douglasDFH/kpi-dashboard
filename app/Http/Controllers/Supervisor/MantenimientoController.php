@@ -4,11 +4,11 @@ namespace App\Http\Controllers\Supervisor;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Mantenimiento\RegistrarMantenimientoRequest;
-use App\Models\RegistroMantenimiento;
 use App\Models\Maquina;
+use App\Models\RegistroMantenimiento;
 use App\Services\Contracts\MantenimientoServiceInterface;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class MantenimientoController extends Controller

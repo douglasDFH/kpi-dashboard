@@ -3,15 +3,15 @@
 namespace App\Http\Controllers\Supervisor;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Supervisor\IniciarJornadaRequest;
 use App\Http\Requests\Supervisor\FinalizarJornadaRequest;
+use App\Http\Requests\Supervisor\IniciarJornadaRequest;
 use App\Http\Requests\Supervisor\PausarJornadaRequest;
 use App\Http\Requests\Supervisor\ReanudarJornadaRequest;
 use App\Models\JornadaProduccion;
 use App\Models\Maquina;
 use App\Services\Contracts\JornadaServiceInterface;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class JornadaController extends Controller
@@ -181,7 +181,7 @@ class JornadaController extends Controller
      */
     public function finalizar(JornadaProduccion $jornada, FinalizarJornadaRequest $request): RedirectResponse
     {
-        if (!in_array($jornada->status, ['running', 'paused'])) {
+        if (! in_array($jornada->status, ['running', 'paused'])) {
             return redirect()
                 ->back()
                 ->withErrors(['error' => 'Solo se pueden finalizar jornadas en ejecución o pausadas']);

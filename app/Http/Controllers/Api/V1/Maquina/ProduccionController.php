@@ -4,9 +4,8 @@ namespace App\Http\Controllers\Api\V1\Maquina;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\RegistrarProduccionRequest;
-use App\Services\Contracts\ProduccionServiceInterface;
 use App\Models\Maquina;
-use App\Models\JornadaProduccion;
+use App\Services\Contracts\ProduccionServiceInterface;
 use Illuminate\Http\JsonResponse;
 
 class ProduccionController extends Controller
@@ -20,15 +19,12 @@ class ProduccionController extends Controller
 
     /**
      * Registra producción desde la máquina (Caso de Uso 3)
-     * 
+     *
      * POST /api/v1/maquina/produccion
-     * 
+     *
      * Recibe: cantidad_producida, cantidad_buena, cantidad_mala
      * Delega lógica: ProduccionService::registrarProduccion()
      * Retorna: registro creado + datos actualizados de jornada
-     * 
-     * @param RegistrarProduccionRequest $request
-     * @return JsonResponse
      */
     public function store(RegistrarProduccionRequest $request): JsonResponse
     {
