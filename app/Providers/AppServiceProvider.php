@@ -2,15 +2,15 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use App\Services\Contracts\KpiServiceInterface;
-use App\Services\KpiService;
 use App\Services\Contracts\JornadaServiceInterface;
-use App\Services\JornadaService;
-use App\Services\Contracts\ProduccionServiceInterface;
-use App\Services\ProduccionService;
+use App\Services\Contracts\KpiServiceInterface;
 use App\Services\Contracts\MantenimientoServiceInterface;
+use App\Services\Contracts\ProduccionServiceInterface;
+use App\Services\JornadaService;
+use App\Services\KpiService;
 use App\Services\MantenimientoService;
+use App\Services\ProduccionService;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
