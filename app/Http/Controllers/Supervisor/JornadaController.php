@@ -40,7 +40,7 @@ class JornadaController extends Controller
     public function create(): View
     {
         $maquinas = Maquina::active()
-            ->with('planMaquina')
+            ->with('planesMaquina')
             ->get();
 
         return view('supervisor.jornadas.create', [
