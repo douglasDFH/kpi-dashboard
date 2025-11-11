@@ -2,11 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\Equipment;
 use App\Models\ProductionData;
 use Carbon\Carbon;
+use Illuminate\Database\Seeder;
 
 class ProductionDataSeeder extends Seeder
 {
@@ -26,7 +25,7 @@ class ProductionDataSeeder extends Seeder
                 for ($shift = 0; $shift < 3; $shift++) {
                     $plannedProduction = rand(80, 120);
                     $actualProduction = rand(70, $plannedProduction);
-                    $defectiveUnits = rand(0, (int)($actualProduction * 0.1));
+                    $defectiveUnits = rand(0, (int) ($actualProduction * 0.1));
                     $goodUnits = $actualProduction - $defectiveUnits;
 
                     ProductionData::create([

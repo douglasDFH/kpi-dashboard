@@ -2,12 +2,12 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\ProductionPlan;
-use App\Models\WorkShift;
 use App\Models\Equipment;
+use App\Models\ProductionPlan;
 use App\Models\User;
+use App\Models\WorkShift;
 use Carbon\Carbon;
+use Illuminate\Database\Seeder;
 
 class ProductionPlanSeeder extends Seeder
 {
@@ -17,7 +17,7 @@ class ProductionPlanSeeder extends Seeder
     public function run(): void
     {
         $equipment = Equipment::all();
-        
+
         // Buscar usuarios por rol de forma más flexible
         $superAdmin = User::first(); // Usar el primer usuario disponible
         $supervisor = User::skip(1)->first() ?? $superAdmin;
@@ -25,6 +25,7 @@ class ProductionPlanSeeder extends Seeder
 
         if ($equipment->isEmpty()) {
             $this->command->warn('⚠️  Advertencia: No se encontraron equipos.');
+
             return;
         }
 
@@ -35,8 +36,8 @@ class ProductionPlanSeeder extends Seeder
             for ($i = 14; $i > 7; $i--) {
                 $plan = ProductionPlan::create([
                     'equipment_id' => $eq->id,
-                    'product_name' => 'Pieza ' . fake()->randomElement(['A100', 'B200', 'C300']),
-                    'product_code' => 'PRD-' . fake()->unique()->numberBetween(1000, 9999),
+                    'product_name' => 'Pieza '.fake()->randomElement(['A100', 'B200', 'C300']),
+                    'product_code' => 'PRD-'.fake()->unique()->numberBetween(1000, 9999),
                     'target_quantity' => $target = fake()->numberBetween(800, 1200),
                     'shift' => $shift = fake()->randomElement(['morning', 'afternoon', 'night']),
                     'start_date' => $startDate = Carbon::now()->subDays($i),
@@ -53,7 +54,7 @@ class ProductionPlanSeeder extends Seeder
                     'end_time' => $this->getShiftEndTime($startDate, $shift),
                     'target_snapshot' => ['product_name' => $plan->product_name, 'target_quantity' => $target],
                     'actual_production' => $actual = fake()->numberBetween($target * 0.85, $target * 1.05),
-                    'good_units' => $good = (int)($actual * 0.95),
+                    'good_units' => $good = (int) ($actual * 0.95),
                     'defective_units' => $actual - $good,
                     'status' => 'completed',
                     'operator_id' => $operator->id,
@@ -65,8 +66,8 @@ class ProductionPlanSeeder extends Seeder
         foreach ($equipment as $eq) {
             $plan = ProductionPlan::create([
                 'equipment_id' => $eq->id,
-                'product_name' => 'Pieza ' . fake()->randomElement(['A100', 'B200', 'C300']),
-                'product_code' => 'PRD-' . fake()->unique()->numberBetween(1000, 9999),
+                'product_name' => 'Pieza '.fake()->randomElement(['A100', 'B200', 'C300']),
+                'product_code' => 'PRD-'.fake()->unique()->numberBetween(1000, 9999),
                 'target_quantity' => $target = fake()->numberBetween(900, 1100),
                 'shift' => $shift = 'morning',
                 'start_date' => Carbon::today(),
@@ -83,8 +84,8 @@ class ProductionPlanSeeder extends Seeder
                 'end_time' => null,
                 'target_snapshot' => ['product_name' => $plan->product_name, 'target_quantity' => $target],
                 'actual_production' => fake()->numberBetween(0, $target * 0.6),
-                'good_units' => fake()->numberBetween(0, (int)($target * 0.57)),
-                'defective_units' => fake()->numberBetween(0, (int)($target * 0.03)),
+                'good_units' => fake()->numberBetween(0, (int) ($target * 0.57)),
+                'defective_units' => fake()->numberBetween(0, (int) ($target * 0.03)),
                 'status' => 'active',
                 'operator_id' => $operator->id,
             ]);
@@ -93,8 +94,8 @@ class ProductionPlanSeeder extends Seeder
             for ($i = 1; $i <= 3; $i++) {
                 ProductionPlan::create([
                     'equipment_id' => $eq->id,
-                    'product_name' => 'Pieza ' . fake()->randomElement(['A100', 'B200', 'C300']),
-                    'product_code' => 'PRD-' . fake()->unique()->numberBetween(1000, 9999),
+                    'product_name' => 'Pieza '.fake()->randomElement(['A100', 'B200', 'C300']),
+                    'product_code' => 'PRD-'.fake()->unique()->numberBetween(1000, 9999),
                     'target_quantity' => fake()->numberBetween(800, 1200),
                     'shift' => fake()->randomElement(['morning', 'afternoon', 'night']),
                     'start_date' => Carbon::today()->addDays($i),
@@ -110,7 +111,7 @@ class ProductionPlanSeeder extends Seeder
 
     private function getShiftStartTime(Carbon $date, string $shift): Carbon
     {
-        return match($shift) {
+        return match ($shift) {
             'morning' => $date->copy()->setTime(6, 0),
             'afternoon' => $date->copy()->setTime(14, 0),
             'night' => $date->copy()->setTime(22, 0),
@@ -119,11 +120,10 @@ class ProductionPlanSeeder extends Seeder
 
     private function getShiftEndTime(Carbon $date, string $shift): Carbon
     {
-        return match($shift) {
+        return match ($shift) {
             'morning' => $date->copy()->setTime(14, 0),
             'afternoon' => $date->copy()->setTime(22, 0),
             'night' => $date->copy()->addDay()->setTime(6, 0),
         };
     }
 }
-

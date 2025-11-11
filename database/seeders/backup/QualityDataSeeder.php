@@ -2,11 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
-use App\Models\QualityData;
 use App\Models\Equipment;
+use App\Models\QualityData;
 use Carbon\Carbon;
+use Illuminate\Database\Seeder;
 
 class QualityDataSeeder extends Seeder
 {
@@ -57,7 +56,7 @@ class QualityDataSeeder extends Seeder
                         $approvalRate = rand(60, 80) / 100;
                     }
 
-                    $approvedUnits = (int)($totalInspected * $approvalRate);
+                    $approvedUnits = (int) ($totalInspected * $approvalRate);
                     $rejectedUnits = $totalInspected - $approvedUnits;
 
                     // If there are rejected units, assign a defect type
@@ -70,7 +69,7 @@ class QualityDataSeeder extends Seeder
                         'rejected_units' => $rejectedUnits,
                         'defect_type' => $defectType,
                         'notes' => $rejectedUnits > 0
-                            ? 'Inspección con ' . $rejectedUnits . ' unidades rechazadas. Se requiere revisión del proceso.'
+                            ? 'Inspección con '.$rejectedUnits.' unidades rechazadas. Se requiere revisión del proceso.'
                             : 'Inspección sin defectos. Proceso dentro de especificaciones.',
                         'inspection_date' => $inspectionDate,
                     ]);
