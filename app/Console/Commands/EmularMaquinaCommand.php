@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Maquina;
 use App\Models\JornadaProduccion;
+use App\Models\Maquina;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 
@@ -37,8 +37,9 @@ class EmularMaquinaCommand extends Command
         $interval = (int) $this->option('interval');
         $cantidadBase = (int) $this->option('cantidad');
 
-        if (!$maquinaId && !$emularTodas) {
+        if (! $maquinaId && ! $emularTodas) {
             $this->error('Debe especificar un maquina_id o usar --all');
+
             return 1;
         }
 
@@ -50,6 +51,7 @@ class EmularMaquinaCommand extends Command
             $maquinas = Maquina::with('tokens')->where('id', $maquinaId)->get();
             if ($maquinas->isEmpty()) {
                 $this->error('Máquina no encontrada');
+
                 return 1;
             }
             $this->info('Emulando máquina: ' . $maquinas->first()->nombre);
@@ -81,8 +83,9 @@ class EmularMaquinaCommand extends Command
     {
         // Verificar que tenga token
         $token = $maquina->tokens->first();
-        if (!$token) {
+        if (! $token) {
             $this->warn("[{$maquina->nombre}] No tiene token Sanctum");
+
             return;
         }
 
@@ -91,8 +94,9 @@ class EmularMaquinaCommand extends Command
             ->where('status', 'running')
             ->first();
 
-        if (!$jornada) {
+        if (! $jornada) {
             $this->warn("[{$maquina->nombre}] No tiene jornada activa");
+
             return;
         }
 
@@ -116,7 +120,7 @@ class EmularMaquinaCommand extends Command
                 $progreso = $data['data']['jornada']['progreso'] ?? 0;
                 $this->info(
                     "[{$maquina->nombre}] ✓ Producido: {$cantidadProducida} " .
-                    "(B:{$cantidadBuena} M:{$cantidadMala}) - Progreso: " . round($progreso, 1) . "%"
+                        "(B:{$cantidadBuena} M:{$cantidadMala}) - Progreso: " . round($progreso, 1) . '%'
                 );
             } else {
                 $this->error("[{$maquina->nombre}] Error: " . $response->body());
