@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Maquina;
 use App\Models\JornadaProduccion;
-use Illuminate\Http\Request;
+use App\Models\Maquina;
 use Illuminate\Http\JsonResponse;
-use Illuminate\View\View;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\View\View;
 
 class EmuladorController extends Controller
 {
@@ -42,7 +42,7 @@ class EmuladorController extends Controller
             $maquina = Maquina::with('tokens')->findOrFail($request->maquina_id);
             $token = $maquina->tokens->first();
 
-            if (!$token) {
+            if (! $token) {
                 return response()->json([
                     'success' => false,
                     'message' => 'La máquina no tiene token Sanctum',
@@ -54,7 +54,7 @@ class EmuladorController extends Controller
                 ->where('status', 'running')
                 ->first();
 
-            if (!$jornada) {
+            if (! $jornada) {
                 return response()->json([
                     'success' => false,
                     'message' => 'La máquina no tiene jornada activa',
@@ -81,7 +81,6 @@ class EmuladorController extends Controller
                     'message' => 'Error de API: ' . $response->body(),
                 ], $response->status());
             }
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
