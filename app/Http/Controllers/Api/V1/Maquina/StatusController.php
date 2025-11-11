@@ -19,8 +19,8 @@ class StatusController extends Controller
     public function update(Request $request): JsonResponse
     {
         try {
-            // Obtener máquina autenticada
-            $maquina = auth('sanctum')->user();
+            // Obtener máquina autenticada del middleware
+            $maquina = $request->input('maquina');
 
             if (! $maquina || ! $maquina instanceof Maquina) {
                 return response()->json([
@@ -68,8 +68,8 @@ class StatusController extends Controller
     public function conectar(Request $request): JsonResponse
     {
         try {
-            // Obtener máquina autenticada
-            $maquina = auth('sanctum')->user();
+            // Obtener máquina autenticada del middleware
+            $maquina = $request->input('maquina');
 
             if (! $maquina || ! $maquina instanceof Maquina) {
                 return response()->json([

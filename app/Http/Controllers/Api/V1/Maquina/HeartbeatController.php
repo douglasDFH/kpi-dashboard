@@ -19,8 +19,8 @@ class HeartbeatController extends Controller
     public function ping(): JsonResponse
     {
         try {
-            // Obtener máquina autenticada
-            $maquina = auth('sanctum')->user();
+            // Obtener máquina autenticada del middleware
+            $maquina = request()->input('maquina');
 
             if (! $maquina || ! $maquina instanceof Maquina) {
                 return response()->json([

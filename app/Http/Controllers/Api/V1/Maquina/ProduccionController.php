@@ -29,8 +29,15 @@ class ProduccionController extends Controller
     public function store(RegistrarProduccionRequest $request): JsonResponse
     {
         try {
-            // Obtener máquina autenticada
-            $maquina = auth('sanctum')->user();
+            // Obtener máquina autenticada del middleware
+            $maquina = $request->input('maquina');
+
+            if (! $maquina || ! $maquina instanceof Maquina) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Máquina no autenticada',
+                ], 401);
+            }
 
             // Delegar al servicio (caso de uso 3: máquina registra producción)
             $registro = $this->produccionService->registrarProduccion(
