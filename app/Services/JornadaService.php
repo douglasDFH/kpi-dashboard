@@ -2,26 +2,24 @@
 
 namespace App\Services;
 
-use App\Services\Contracts\JornadaServiceInterface;
-use App\Models\JornadaProduccion;
-use App\Models\PlanMaquina;
 use App\Models\EventoParadaJornada;
+use App\Models\JornadaProduccion;
 use App\Models\Maquina;
-use Illuminate\Support\Facades\DB;
+use App\Models\PlanMaquina;
+use App\Services\Contracts\JornadaServiceInterface;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
 
 /**
  * Jornada Service
- * 
+ *
  * Servicio de gestión de jornadas de producción.
- * 
+ *
  * Responsabilidades:
  * - Iniciar jornadas: Crear registro en jornadas_produccion con snapshot del plan
  * - Finalizar jornadas: Cerrar jornada y dispara cálculo de KPIs
  * - Pausar jornadas: Crear evento de parada
  * - Reanudar jornadas: Cerrar evento de parada abierto
- * 
+ *
  * Schema Referencias:
  * - jornadas_produccion: Contiene el estado y datos agregados de la jornada
  * - eventos_parada_jornada: Registra todas las paradas (inicio_parada, fin_parada)
@@ -31,16 +29,17 @@ class JornadaService implements JornadaServiceInterface
 {
     /**
      * Inicia una nueva jornada de producción
-     * 
+     *
      * Proceso:
      * 1. Busca el plan activo para la máquina
      * 2. Crea registro en jornadas_produccion con snapshot del plan
      * 3. Sets status a 'running'
      * 4. Registra en auditoría
      *
-     * @param string $maquinaId UUID de la máquina
-     * @param string $supervisorId ID del usuario supervisor
+     * @param  string  $maquinaId  UUID de la máquina
+     * @param  string  $supervisorId  ID del usuario supervisor
      * @return JornadaProduccion La jornada creada
+     *
      * @throws \Exception Si no hay plan activo
      */
     public function iniciarJornada(string $maquinaId, string $supervisorId): JornadaProduccion
@@ -53,7 +52,7 @@ class JornadaService implements JornadaServiceInterface
             ->where('activo', true)
             ->first();
 
-        if (!$planActivo) {
+        if (! $planActivo) {
             throw new \Exception("No hay plan activo para la máquina: {$maquina->nombre}");
         }
 
@@ -64,12 +63,12 @@ class JornadaService implements JornadaServiceInterface
             'supervisor_id' => $supervisorId,
             'status' => 'running',
             'inicio_real' => now(),
-            
+
             // Snapshot del plan
             'objetivo_unidades_copiado' => $planActivo->objetivo_unidades,
             'unidad_medida_copiado' => $planActivo->unidad_medida,
             'limite_fallos_critico_copiado' => $planActivo->limite_fallos_critico,
-            
+
             // Iniciar contadores en 0
             'total_unidades_producidas' => 0,
             'total_unidades_buenas' => 0,
@@ -77,7 +76,7 @@ class JornadaService implements JornadaServiceInterface
         ]);
 
         // Log en auditoría
-        Log::info("Jornada iniciada", [
+        Log::info('Jornada iniciada', [
             'jornada_id' => $jornada->id,
             'maquina_id' => $maquinaId,
             'supervisor_id' => $supervisorId,
@@ -89,7 +88,7 @@ class JornadaService implements JornadaServiceInterface
 
     /**
      * Finaliza una jornada de producción
-     * 
+     *
      * Proceso:
      * 1. Valida que la jornada esté en estado 'running'
      * 2. Cierra todos los eventos de parada abiertos
@@ -97,8 +96,9 @@ class JornadaService implements JornadaServiceInterface
      * 4. Dispara Job CalcularKpisFinalesJornada
      * 5. Registra en auditoría
      *
-     * @param string $jornadaId UUID de la jornada
+     * @param  string  $jornadaId  UUID de la jornada
      * @return JornadaProduccion La jornada finalizada
+     *
      * @throws \Exception Si la jornada no está en estado correcto
      */
     public function finalizarJornada(string $jornadaId): JornadaProduccion
@@ -129,7 +129,7 @@ class JornadaService implements JornadaServiceInterface
         // dispatch(new CalcularKpisFinalesJornada($jornada->id));
 
         // Log en auditoría
-        Log::info("Jornada finalizada", [
+        Log::info('Jornada finalizada', [
             'jornada_id' => $jornadaId,
             'maquina_id' => $jornada->maquina_id,
             'total_producido' => $jornada->total_unidades_producidas,
@@ -141,7 +141,7 @@ class JornadaService implements JornadaServiceInterface
 
     /**
      * Pausa una jornada de producción
-     * 
+     *
      * Proceso:
      * 1. Valida que la jornada esté en 'running'
      * 2. Crea evento de parada con motivo 'pausa_supervisor'
@@ -149,12 +149,13 @@ class JornadaService implements JornadaServiceInterface
      * 4. Dispara evento WebSocket
      * 5. Registra en auditoría
      *
-     * @param string $jornadaId UUID de la jornada
-     * @param string $motivo Razón de la pausa (opcional)
+     * @param  string  $jornadaId  UUID de la jornada
+     * @param  string  $motivo  Razón de la pausa (opcional)
      * @return JornadaProduccion La jornada pausada
+     *
      * @throws \Exception Si la jornada no está en 'running'
      */
-    public function pausarJornada(string $jornadaId, string $motivo = null): JornadaProduccion
+    public function pausarJornada(string $jornadaId, ?string $motivo = null): JornadaProduccion
     {
         $jornada = JornadaProduccion::findOrFail($jornadaId);
 
@@ -176,7 +177,7 @@ class JornadaService implements JornadaServiceInterface
         // TODO: Disparar evento WebSocket para actualizar dashboard
 
         // Log en auditoría
-        Log::info("Jornada pausada", [
+        Log::info('Jornada pausada', [
             'jornada_id' => $jornadaId,
             'maquina_id' => $jornada->maquina_id,
             'motivo' => $motivo,
@@ -187,7 +188,7 @@ class JornadaService implements JornadaServiceInterface
 
     /**
      * Reanuda una jornada que fue pausada
-     * 
+     *
      * Proceso:
      * 1. Valida que la jornada esté en 'paused'
      * 2. Busca el último evento de parada abierto
@@ -196,8 +197,9 @@ class JornadaService implements JornadaServiceInterface
      * 5. Dispara evento WebSocket
      * 6. Registra en auditoría
      *
-     * @param string $jornadaId UUID de la jornada
+     * @param  string  $jornadaId  UUID de la jornada
      * @return JornadaProduccion La jornada reanudada
+     *
      * @throws \Exception Si la jornada no está en 'paused'
      */
     public function reanudarJornada(string $jornadaId): JornadaProduccion
@@ -224,7 +226,7 @@ class JornadaService implements JornadaServiceInterface
         // TODO: Disparar evento WebSocket para actualizar dashboard
 
         // Log en auditoría
-        Log::info("Jornada reanudada", [
+        Log::info('Jornada reanudada', [
             'jornada_id' => $jornadaId,
             'maquina_id' => $jornada->maquina_id,
         ]);
@@ -235,7 +237,7 @@ class JornadaService implements JornadaServiceInterface
     /**
      * Obtiene la jornada activa de una máquina
      *
-     * @param string $maquinaId UUID de la máquina
+     * @param  string  $maquinaId  UUID de la máquina
      * @return JornadaProduccion|null La jornada activa o null
      */
     public function obtenerJornadaActiva(string $maquinaId): ?JornadaProduccion
@@ -248,7 +250,7 @@ class JornadaService implements JornadaServiceInterface
     /**
      * Verifica si hay eventos de parada abiertos en una jornada
      *
-     * @param string $jornadaId UUID de la jornada
+     * @param  string  $jornadaId  UUID de la jornada
      * @return bool True si hay paradas abiertas
      */
     public function hayParadasAbiertas(string $jornadaId): bool

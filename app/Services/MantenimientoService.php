@@ -2,20 +2,20 @@
 
 namespace App\Services;
 
-use App\Services\Contracts\MantenimientoServiceInterface;
-use App\Models\RegistroMantenimiento;
 use App\Models\Maquina;
+use App\Models\RegistroMantenimiento;
+use App\Services\Contracts\MantenimientoServiceInterface;
 use Illuminate\Support\Facades\Log;
 
 /**
  * Mantenimiento Service
- * 
+ *
  * Servicio de gestión de registros de mantenimiento.
- * 
+ *
  * Responsabilidades:
  * - Registrar mantenimientos: Crear RegistroMantenimiento
  * - Obtener historial: Consultar mantenimientos por máquina
- * 
+ *
  * Schema Referencias:
  * - registros_mantenimiento: Registra tipo (preventivo, correctivo, calibracion)
  */
@@ -23,19 +23,20 @@ class MantenimientoService implements MantenimientoServiceInterface
 {
     /**
      * Registra un evento de mantenimiento
-     * 
+     *
      * Proceso:
      * 1. Valida máquina existe
      * 2. Crea RegistroMantenimiento
      * 3. Vincula con jornada si se proporciona
      * 4. Registra en auditoría
      *
-     * @param string $maquinaId UUID de la máquina
-     * @param string $supervisorId ID del usuario supervisor
-     * @param string $tipo Tipo de mantenimiento (preventivo, correctivo, calibracion)
-     * @param string $descripcion Descripción del mantenimiento
-     * @param string|null $jornadaId UUID de la jornada (opcional)
+     * @param  string  $maquinaId  UUID de la máquina
+     * @param  string  $supervisorId  ID del usuario supervisor
+     * @param  string  $tipo  Tipo de mantenimiento (preventivo, correctivo, calibracion)
+     * @param  string  $descripcion  Descripción del mantenimiento
+     * @param  string|null  $jornadaId  UUID de la jornada (opcional)
      * @return RegistroMantenimiento El registro creado
+     *
      * @throws \Exception Si la máquina no existe
      */
     public function registrarMantenimiento(
@@ -50,7 +51,7 @@ class MantenimientoService implements MantenimientoServiceInterface
 
         // Validar tipo
         $tiposValidos = ['preventivo', 'correctivo', 'calibracion'];
-        if (!in_array($tipo, $tiposValidos)) {
+        if (! in_array($tipo, $tiposValidos)) {
             throw new \Exception("Tipo de mantenimiento inválido: {$tipo}");
         }
 
@@ -64,7 +65,7 @@ class MantenimientoService implements MantenimientoServiceInterface
         ]);
 
         // Log en auditoría
-        Log::info("Mantenimiento registrado", [
+        Log::info('Mantenimiento registrado', [
             'registro_id' => $registro->id,
             'maquina_id' => $maquinaId,
             'supervisor_id' => $supervisorId,
@@ -77,12 +78,11 @@ class MantenimientoService implements MantenimientoServiceInterface
 
     /**
      * Obtiene historial de mantenimientos de una máquina
-     * 
+     *
      * Consulta registros ordenados por fecha descendente (más recientes primero).
      *
-     * @param string $maquinaId UUID de la máquina
-     * @param int $limit Límite de registros (default: 50)
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @param  string  $maquinaId  UUID de la máquina
+     * @param  int  $limit  Límite de registros (default: 50)
      */
     public function obtenerHistorial(string $maquinaId, int $limit = 50): \Illuminate\Database\Eloquent\Collection
     {

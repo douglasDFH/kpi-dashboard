@@ -2,22 +2,19 @@
 
 namespace App\Services;
 
-use App\Services\Contracts\KpiServiceInterface;
-use App\Models\Maquina;
-use App\Models\RegistroProduccion;
 use App\Models\EventoParadaJornada;
 use App\Models\JornadaProduccion;
 use App\Models\PlanMaquina;
-use App\Models\ResultadoKpiJornada;
-use Illuminate\Support\Facades\DB;
+use App\Models\RegistroProduccion;
+use App\Services\Contracts\KpiServiceInterface;
 use Carbon\Carbon;
 
 /**
  * KPI Service
- * 
+ *
  * Servicio de cálculo de KPIs según esquema v5 del proyecto.
  * Fórmula: OEE = Disponibilidad × Rendimiento × Calidad
- * 
+ *
  * Schema:
  * - jornadas_produccion: Jornada de trabajo completa de una máquina
  * - eventos_parada_jornada: Paradas (programadas/no programadas) dentro de una jornada
@@ -28,13 +25,13 @@ class KpiService implements KpiServiceInterface
 {
     /**
      * Calcula OEE = Disponibilidad × Rendimiento × Calidad
-     * 
+     *
      * Busca la jornada completada más reciente y sus KPIs pre-calculados,
      * o calcula en tiempo real si se especifica una jornada activa.
      *
-     * @param string $maquinaId UUID de la máquina
-     * @param Carbon|null $startDate (ignorado en esta versión - usa jornadas)
-     * @param Carbon|null $endDate (ignorado en esta versión - usa jornadas)
+     * @param  string  $maquinaId  UUID de la máquina
+     * @param  Carbon|null  $startDate  (ignorado en esta versión - usa jornadas)
+     * @param  Carbon|null  $endDate  (ignorado en esta versión - usa jornadas)
      * @return array ['oee' => float, 'availability' => float, 'performance' => float, 'quality' => float, 'period' => [...]]
      */
     public function calculateOEE(string $maquinaId, ?Carbon $startDate = null, ?Carbon $endDate = null): array
@@ -45,14 +42,14 @@ class KpiService implements KpiServiceInterface
             ->latest('fin_real')
             ->first();
 
-        if (!$jornada) {
+        if (! $jornada) {
             // Si no hay jornada completada, intentar usar la activa
             $jornada = JornadaProduccion::where('maquina_id', $maquinaId)
                 ->where('status', 'running')
                 ->latest('inicio_real')
                 ->first();
 
-            if (!$jornada) {
+            if (! $jornada) {
                 // Sin jornada, devolver ceros
                 return [
                     'oee' => 0.00,
@@ -89,14 +86,14 @@ class KpiService implements KpiServiceInterface
 
     /**
      * Calcula Disponibilidad (Availability)
-     * 
+     *
      * Disponibilidad = (Tiempo Planificado - Tiempo de Paradas) / Tiempo Planificado × 100
-     * 
+     *
      * Tiempo Planificado: inicio_real a fin_real (o hasta ahora si activa)
      * Tiempo de Paradas: suma de (fin_parada - inicio_parada) de eventos_parada_jornada
      *
-     * @param string $maquinaId UUID de la máquina
-     * @param string $jornadaId UUID de la jornada
+     * @param  string  $maquinaId  UUID de la máquina
+     * @param  string  $jornadaId  UUID de la jornada
      * @return float Porcentaje 0-100
      */
     public function calculateAvailability(string $maquinaId, string $jornadaId): float
@@ -105,7 +102,7 @@ class KpiService implements KpiServiceInterface
             ->where('maquina_id', $maquinaId)
             ->first();
 
-        if (!$jornada || !$jornada->inicio_real) {
+        if (! $jornada || ! $jornada->inicio_real) {
             return 0.0;
         }
 
@@ -124,24 +121,26 @@ class KpiService implements KpiServiceInterface
             ->sum(function ($evento) {
                 $inicio = $evento->inicio_parada;
                 $fin = $evento->fin_parada ?? Carbon::now();
+
                 return $inicio->diffInMinutes($fin);
             });
 
         $tiempoActivo = $tiempoPlaneado - $tiempoParadas;
+
         return ($tiempoActivo / $tiempoPlaneado) * 100;
     }
 
     /**
      * Calcula Rendimiento (Performance)
-     * 
+     *
      * Rendimiento = (Tiempo Ideal × Unidades Producidas) / Tiempo de Operación Real × 100
-     * 
+     *
      * Tiempo Ideal = ideal_cycle_time_seconds del plan
      * Unidades Producidas = total_unidades_producidas de la jornada
      * Tiempo Operación Real = Disponibilidad × Tiempo Planificado (sin paradas)
      *
-     * @param string $maquinaId UUID de la máquina
-     * @param string $jornadaId UUID de la jornada
+     * @param  string  $maquinaId  UUID de la máquina
+     * @param  string  $jornadaId  UUID de la jornada
      * @return float Porcentaje 0-100
      */
     public function calculatePerformance(string $maquinaId, string $jornadaId): float
@@ -150,13 +149,13 @@ class KpiService implements KpiServiceInterface
             ->where('maquina_id', $maquinaId)
             ->first();
 
-        if (!$jornada || !$jornada->inicio_real) {
+        if (! $jornada || ! $jornada->inicio_real) {
             return 0.0;
         }
 
         // Obtener el plan con ideal_cycle_time_seconds
         $plan = PlanMaquina::find($jornada->plan_maquina_id);
-        if (!$plan || $plan->ideal_cycle_time_seconds == 0) {
+        if (! $plan || $plan->ideal_cycle_time_seconds == 0) {
             return 0.0;
         }
 
@@ -178,6 +177,7 @@ class KpiService implements KpiServiceInterface
             ->sum(function ($evento) {
                 $inicio = $evento->inicio_parada;
                 $fin = $evento->fin_parada ?? Carbon::now();
+
                 return $inicio->diffInSeconds($fin);
             });
 
@@ -189,19 +189,20 @@ class KpiService implements KpiServiceInterface
 
         // Performance = (Tiempo Ideal × Unidades) / Tiempo Real × 100
         $tiempoIdeal = $plan->ideal_cycle_time_seconds * $unidadesProducidas;
+
         return ($tiempoIdeal / $tiempoOperacion) * 100;
     }
 
     /**
      * Calcula Calidad (Quality)
-     * 
+     *
      * Calidad = Unidades Buenas / Unidades Totales × 100
-     * 
+     *
      * Unidades Buenas = suma de cantidad_buena de registros_produccion
      * Unidades Totales = suma de cantidad_producida de registros_produccion
      *
-     * @param string $maquinaId UUID de la máquina
-     * @param string $jornadaId UUID de la jornada
+     * @param  string  $maquinaId  UUID de la máquina
+     * @param  string  $jornadaId  UUID de la jornada
      * @return float Porcentaje 0-100
      */
     public function calculateQuality(string $maquinaId, string $jornadaId): float
@@ -228,13 +229,13 @@ class KpiService implements KpiServiceInterface
     /**
      * Calcula métricas adicionales de una jornada
      *
-     * @param string $maquinaId UUID de la máquina
-     * @param string|null $jornadaId UUID de la jornada (si null, usa última)
+     * @param  string  $maquinaId  UUID de la máquina
+     * @param  string|null  $jornadaId  UUID de la jornada (si null, usa última)
      * @return array Métricas: total_producido, total_bueno, total_malo, objetivo, cobertura
      */
     public function calculateAdditionalMetrics(string $maquinaId, ?string $jornadaId = null): array
     {
-        if (!$jornadaId) {
+        if (! $jornadaId) {
             $jornada = JornadaProduccion::where('maquina_id', $maquinaId)
                 ->latest('created_at')
                 ->first();
@@ -242,7 +243,7 @@ class KpiService implements KpiServiceInterface
             $jornada = JornadaProduccion::find($jornadaId);
         }
 
-        if (!$jornada) {
+        if (! $jornada) {
             return [
                 'total_producido' => 0,
                 'total_bueno' => 0,

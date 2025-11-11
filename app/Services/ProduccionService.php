@@ -2,22 +2,22 @@
 
 namespace App\Services;
 
-use App\Services\Contracts\ProduccionServiceInterface;
-use App\Models\RegistroProduccion;
-use App\Models\JornadaProduccion;
 use App\Models\EventoParadaJornada;
+use App\Models\JornadaProduccion;
+use App\Models\RegistroProduccion;
+use App\Services\Contracts\ProduccionServiceInterface;
 use Illuminate\Support\Facades\Log;
 
 /**
  * Produccion Service
- * 
+ *
  * Servicio de gestión de registros de producción.
- * 
+ *
  * Responsabilidades:
  * - Registrar producción: Crear RegistroProduccion y actualizar jornadas_produccion
  * - Verificar límites: Validar límites de fallos críticos
  * - Detener automáticamente: Crear evento de parada si se excede el límite
- * 
+ *
  * Schema Referencias:
  * - registros_produccion: Registra cantidad_producida, cantidad_buena, cantidad_mala
  * - jornadas_produccion: Agrega totales: total_unidades_producidas, total_unidades_buenas, total_unidades_malas
@@ -27,7 +27,7 @@ class ProduccionService implements ProduccionServiceInterface
 {
     /**
      * Registra un evento de producción de la máquina
-     * 
+     *
      * Proceso:
      * 1. Valida que exista una jornada activa
      * 2. Crea RegistroProduccion con los datos
@@ -37,11 +37,12 @@ class ProduccionService implements ProduccionServiceInterface
      * 6. Dispara evento WebSocket
      * 7. Registra en auditoría
      *
-     * @param string $maquinaId UUID de la máquina
-     * @param int $cantidadProducida Cantidad producida
-     * @param int $cantidadBuena Cantidad sin defectos
-     * @param int $cantidadMala Cantidad con defectos
+     * @param  string  $maquinaId  UUID de la máquina
+     * @param  int  $cantidadProducida  Cantidad producida
+     * @param  int  $cantidadBuena  Cantidad sin defectos
+     * @param  int  $cantidadMala  Cantidad con defectos
      * @return RegistroProduccion El registro creado
+     *
      * @throws \Exception Si no hay jornada activa
      */
     public function registrarProduccion(
@@ -55,13 +56,13 @@ class ProduccionService implements ProduccionServiceInterface
             ->where('status', 'running')
             ->first();
 
-        if (!$jornada) {
+        if (! $jornada) {
             throw new \Exception("No hay jornada activa para la máquina: {$maquinaId}");
         }
 
         // Validar que la suma coincida
         if ($cantidadBuena + $cantidadMala !== $cantidadProducida) {
-            throw new \Exception("Validación fallida: cantidad_buena + cantidad_mala debe ser igual a cantidad_producida");
+            throw new \Exception('Validación fallida: cantidad_buena + cantidad_mala debe ser igual a cantidad_producida');
         }
 
         // Crear registro de producción
@@ -89,7 +90,7 @@ class ProduccionService implements ProduccionServiceInterface
         // TODO: Disparar evento WebSocket para actualizar dashboard
 
         // Log en auditoría
-        Log::info("Producción registrada", [
+        Log::info('Producción registrada', [
             'jornada_id' => $jornada->id,
             'maquina_id' => $maquinaId,
             'cantidad_producida' => $cantidadProducida,
@@ -105,7 +106,7 @@ class ProduccionService implements ProduccionServiceInterface
      *
      * Comparar: total_unidades_malas >= limite_fallos_critico_copiado
      *
-     * @param string $jornadaId UUID de la jornada
+     * @param  string  $jornadaId  UUID de la jornada
      * @return bool True si se alcanzó el límite
      */
     public function verificarLimiteFallos(string $jornadaId): bool
@@ -117,7 +118,7 @@ class ProduccionService implements ProduccionServiceInterface
 
     /**
      * Detiene automáticamente la máquina por límite de fallos críticos
-     * 
+     *
      * Proceso:
      * 1. Actualiza estado de jornada a 'stopped_critical'
      * 2. Crea evento de parada con motivo 'falla_critica_qa'
@@ -125,8 +126,8 @@ class ProduccionService implements ProduccionServiceInterface
      * 4. Dispara evento WebSocket
      * 5. Registra en auditoría
      *
-     * @param string $jornadaId UUID de la jornada
-     * @return void
+     * @param  string  $jornadaId  UUID de la jornada
+     *
      * @throws \Exception Si falla la detención
      */
     public function detenerPorFallosCriticos(string $jornadaId): void
@@ -146,7 +147,7 @@ class ProduccionService implements ProduccionServiceInterface
         // TODO: Disparar evento WebSocket para alertar en dashboard
 
         // Log en auditoría
-        Log::warning("Máquina detenida por fallos críticos", [
+        Log::warning('Máquina detenida por fallos críticos', [
             'jornada_id' => $jornadaId,
             'maquina_id' => $jornada->maquina_id,
             'total_fallos' => $jornada->total_unidades_malas,
