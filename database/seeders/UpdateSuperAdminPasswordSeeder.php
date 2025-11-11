@@ -2,10 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class UpdateSuperAdminPasswordSeeder extends Seeder
 {
@@ -16,11 +15,11 @@ class UpdateSuperAdminPasswordSeeder extends Seeder
     {
         // Update SuperAdmin password to 123456
         $user = User::where('email', 'admin@ecoplast.com')->first();
-        
+
         if ($user) {
             $user->update([
                 'password' => Hash::make('123456'),
-                'updated_at' => now()
+                'updated_at' => now(),
             ]);
             $this->command->info('✅ Contraseña del SuperAdmin actualizada exitosamente a: 123456');
         } else {

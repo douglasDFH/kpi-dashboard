@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class AreaSeeder extends Seeder
@@ -35,6 +34,6 @@ class AreaSeeder extends Seeder
             \App\Models\Area::create($area);
         }
 
-        $this->command->info('✅ Áreas creadas exitosamente: ' . count($areas));
+        $this->command->info('✅ Áreas creadas exitosamente: '.count($areas));
     }
 }

@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -94,7 +93,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 $permissions[] = [
                     'id' => $permissionId++,
                     'name' => "{$module}.{$action}",
-                    'display_name' => ucfirst($action) . ' ' . ucfirst($module),
+                    'display_name' => ucfirst($action).' '.ucfirst($module),
                     'module' => $module,
                     'action' => $action,
                     'description' => "Permiso para {$action} en módulo {$module}",
@@ -110,37 +109,37 @@ class RolesAndPermissionsSeeder extends Seeder
         $rolePermissions = [
             // SuperAdmin: TODOS los permisos
             'superadmin' => range(1, count($permissions)),
-            
+
             // Admin: Todos excepto gestión de usuarios y auditoría
-            'admin' => array_filter($permissions, function($p) {
-                return !in_array($p['module'], ['users', 'audit']);
+            'admin' => array_filter($permissions, function ($p) {
+                return ! in_array($p['module'], ['users', 'audit']);
             }),
-            
+
             // Gerente: Solo lectura y reportes
-            'gerente' => array_filter($permissions, function($p) {
+            'gerente' => array_filter($permissions, function ($p) {
                 return in_array($p['action'], ['view', 'export']);
             }),
-            
+
             // Supervisor: Lectura, creación y edición (no eliminación)
-            'supervisor' => array_filter($permissions, function($p) {
-                return in_array($p['action'], ['view', 'create', 'edit', 'export']) && 
-                       !in_array($p['module'], ['users', 'audit', 'equipment']);
+            'supervisor' => array_filter($permissions, function ($p) {
+                return in_array($p['action'], ['view', 'create', 'edit', 'export']) &&
+                       ! in_array($p['module'], ['users', 'audit', 'equipment']);
             }),
-            
+
             // Operador: Solo producción (lectura y creación)
-            'operador' => array_filter($permissions, function($p) {
+            'operador' => array_filter($permissions, function ($p) {
                 return $p['module'] === 'production' && in_array($p['action'], ['view', 'create']) ||
                        $p['module'] === 'dashboard' && $p['action'] === 'view';
             }),
-            
+
             // Calidad: Solo calidad (completo) y lectura de dashboard
-            'calidad' => array_filter($permissions, function($p) {
+            'calidad' => array_filter($permissions, function ($p) {
                 return $p['module'] === 'quality' ||
                        ($p['module'] === 'dashboard' && $p['action'] === 'view');
             }),
-            
+
             // Mantenimiento: Solo downtime (completo) y lectura de dashboard
-            'mantenimiento' => array_filter($permissions, function($p) {
+            'mantenimiento' => array_filter($permissions, function ($p) {
                 return $p['module'] === 'downtime' ||
                        ($p['module'] === 'dashboard' && $p['action'] === 'view');
             }),
@@ -148,7 +147,7 @@ class RolesAndPermissionsSeeder extends Seeder
 
         foreach ($rolePermissions as $roleName => $perms) {
             $role = DB::table('roles')->where('name', $roleName)->first();
-            
+
             foreach ($perms as $perm) {
                 if (is_array($perm)) {
                     $permId = $perm['id'];
@@ -227,4 +226,3 @@ class RolesAndPermissionsSeeder extends Seeder
         echo "✅ 3 usuarios de ejemplo creados\n";
     }
 }
-

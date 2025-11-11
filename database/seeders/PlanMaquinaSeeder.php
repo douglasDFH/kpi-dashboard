@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class PlanMaquinaSeeder extends Seeder
@@ -16,6 +15,7 @@ class PlanMaquinaSeeder extends Seeder
 
         if ($maquinas->isEmpty()) {
             $this->command->error('❌ No hay máquinas creadas. Ejecuta MaquinaSeeder primero.');
+
             return;
         }
 
@@ -24,7 +24,7 @@ class PlanMaquinaSeeder extends Seeder
         $planes = [];
 
         // Crear planes para máquinas de prensado
-        $prensas = $maquinas->filter(function($maquina) {
+        $prensas = $maquinas->filter(function ($maquina) {
             return str_contains($maquina->nombre, 'Prensa');
         });
 
@@ -51,7 +51,7 @@ class PlanMaquinaSeeder extends Seeder
         }
 
         // Crear planes para estaciones de ensamblaje
-        $ensamblaje = $maquinas->filter(function($maquina) {
+        $ensamblaje = $maquinas->filter(function ($maquina) {
             return str_contains($maquina->nombre, 'Ensamblaje');
         });
 
@@ -68,8 +68,8 @@ class PlanMaquinaSeeder extends Seeder
         }
 
         // Crear planes para otras máquinas
-        $otras = $maquinas->filter(function($maquina) {
-            return !str_contains($maquina->nombre, 'Prensa') && !str_contains($maquina->nombre, 'Ensamblaje');
+        $otras = $maquinas->filter(function ($maquina) {
+            return ! str_contains($maquina->nombre, 'Prensa') && ! str_contains($maquina->nombre, 'Ensamblaje');
         });
 
         foreach ($otras as $maquina) {
@@ -88,6 +88,6 @@ class PlanMaquinaSeeder extends Seeder
             \App\Models\PlanMaquina::create($plan);
         }
 
-        $this->command->info('✅ Planes de producción creados: ' . count($planes));
+        $this->command->info('✅ Planes de producción creados: '.count($planes));
     }
 }
