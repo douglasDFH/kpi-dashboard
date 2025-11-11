@@ -68,8 +68,11 @@
                             <a href="{{ route('admin.planes.index') }}" class="block px-4 py-2 text-sm hover:bg-slate-600">
                                 📋 Planes Producción
                             </a>
-                            <a href="{{ route('admin.areas.index') }}" class="block px-4 py-2 text-sm hover:bg-slate-600 last:rounded-b-md">
+                            <a href="{{ route('admin.areas.index') }}" class="block px-4 py-2 text-sm hover:bg-slate-600">
                                 🏭 Áreas
+                            </a>
+                            <a href="{{ route('admin.users.index') }}" class="block px-4 py-2 text-sm hover:bg-slate-600 last:rounded-b-md">
+                                👥 Usuarios
                             </a>
                         </div>
                     </div>
@@ -112,6 +115,7 @@
             <a href="{{ route('admin.maquinas.index') }}" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-slate-700">⚙️ Máquinas</a>
             <a href="{{ route('admin.planes.index') }}" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-slate-700">📋 Planes</a>
             <a href="{{ route('admin.areas.index') }}" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-slate-700">🏭 Áreas</a>
+            <a href="{{ route('admin.users.index') }}" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-slate-700">👥 Usuarios</a>
         @endif
     </div>
 </nav>

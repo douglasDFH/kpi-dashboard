@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AreaController;
 use App\Http\Controllers\Admin\MaquinaController;
 use App\Http\Controllers\Admin\PlanMaquinaController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmuladorController;
@@ -51,6 +52,9 @@ Route::middleware(['auth'])->group(function () {
             ->name('areas.restore');
         Route::delete('areas/{id}/force-delete', [AreaController::class, 'forceDelete'])
             ->name('areas.forceDelete');
+
+        // Usuarios
+        Route::resource('users', UserController::class);
     });
 
     // ============================================
