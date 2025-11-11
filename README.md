@@ -91,14 +91,14 @@ Un dashboard moderno y en tiempo real para el monitoreo de indicadores clave de 
 
 ```bash
 # Clonar repositorio
-git clone <repository-url>
+git clone https://github.com/douglasDFH/kpi-dashboard.git
 cd kpi-dashboard
 
 # Instalar y configurar
 composer run setup
 
 # Iniciar servidor de desarrollo
-composer run dev
+npm run serve
 ```
 
 ### Opción 2: Instalación Manual
