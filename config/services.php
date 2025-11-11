@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'machine' => [
+        'auth_header' => env('MACHINE_AUTH_HEADER', 'X-Machine-Token'),
+        'auth_token' => env('MACHINE_AUTH_TOKEN'),
+    ],
+
 ];
