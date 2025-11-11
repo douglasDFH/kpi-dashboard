@@ -13,13 +13,14 @@ class MaquinaDetenidaCritica implements ShouldBroadcastNow
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public string $maquinaId;
+
     public array $data;
 
     /**
      * Create a new event instance.
-     * 
-     * @param string $maquinaId UUID de la máquina
-     * @param array $data Datos de la parada crítica
+     *
+     * @param  string  $maquinaId  UUID de la máquina
+     * @param  array  $data  Datos de la parada crítica
      */
     public function __construct(string $maquinaId, array $data)
     {
