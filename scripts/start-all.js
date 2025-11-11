@@ -3,9 +3,11 @@
 import { spawn } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import os from 'os';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(__dirname, '..');
+const isWindows = os.platform() === 'win32';
 
 console.log('\n🚀 Iniciando KPI Dashboard...\n');
 console.log('📋 Servicios a iniciar:');
@@ -46,9 +48,18 @@ function startProcess(label, command, args) {
   let stderr = '';
   let stdout = '';
 
-  const child = spawn(command, args, {
+  // En Windows, usar .cmd para npm
+  let cmd = command;
+  let cmdArgs = args;
+  
+  if (isWindows && command === 'npm') {
+    cmd = 'npm.cmd';
+  }
+
+  const child = spawn(cmd, cmdArgs, {
     cwd: projectRoot,
     stdio: ['inherit', 'pipe', 'pipe'],
+    shell: isWindows,
   });
 
   // Capturar salida para logging
