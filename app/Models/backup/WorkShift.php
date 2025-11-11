@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Carbon\Carbon;
 
 class WorkShift extends Model
 {
@@ -62,7 +61,7 @@ class WorkShift extends Model
     public static function startShift(int $equipmentId, ?int $planId, string $shiftType, int $operatorId): self
     {
         $snapshot = null;
-        
+
         if ($planId) {
             $plan = ProductionPlan::find($planId);
             if ($plan) {
@@ -71,7 +70,7 @@ class WorkShift extends Model
                     'target_quantity' => $plan->target_quantity,
                     'shift' => $plan->shift,
                 ];
-                
+
                 // Activar plan si está pending
                 if ($plan->status === 'pending') {
                     $plan->update(['status' => 'active']);
@@ -129,10 +128,10 @@ class WorkShift extends Model
      */
     public function getDurationMinutesAttribute(): ?int
     {
-        if (!$this->end_time) {
+        if (! $this->end_time) {
             return now()->diffInMinutes($this->start_time);
         }
-        
+
         return $this->end_time->diffInMinutes($this->start_time);
     }
 
@@ -141,16 +140,16 @@ class WorkShift extends Model
      */
     public function getProgressAttribute(): float
     {
-        if (!$this->target_snapshot || !isset($this->target_snapshot['target_quantity'])) {
+        if (! $this->target_snapshot || ! isset($this->target_snapshot['target_quantity'])) {
             return 0;
         }
-        
+
         $target = $this->target_snapshot['target_quantity'];
-        
+
         if ($target == 0) {
             return 0;
         }
-        
+
         return min(100, ($this->actual_production / $target) * 100);
     }
 
@@ -162,8 +161,7 @@ class WorkShift extends Model
         if ($this->actual_production == 0) {
             return 100;
         }
-        
+
         return ($this->good_units / $this->actual_production) * 100;
     }
 }
-

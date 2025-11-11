@@ -32,6 +32,7 @@ class QualityData extends Model
         if ($this->total_inspected == 0) {
             return 0;
         }
+
         return ($this->approved_units / $this->total_inspected) * 100;
     }
 
@@ -41,6 +42,7 @@ class QualityData extends Model
         if ($this->total_inspected == 0) {
             return 0;
         }
+
         return ($this->rejected_units / $this->total_inspected) * 100;
     }
 }

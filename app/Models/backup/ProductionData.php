@@ -33,6 +33,7 @@ class ProductionData extends Model
         if ($this->planned_production == 0) {
             return 0;
         }
+
         return ($this->actual_production / $this->planned_production) * 100;
     }
 
@@ -42,6 +43,7 @@ class ProductionData extends Model
         if ($this->actual_production == 0) {
             return 0;
         }
+
         return ($this->good_units / $this->actual_production) * 100;
     }
 }

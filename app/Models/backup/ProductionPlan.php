@@ -56,7 +56,7 @@ class ProductionPlan extends Model
      */
     public function isActive(): bool
     {
-        return $this->status === 'active' && 
+        return $this->status === 'active' &&
                now()->between($this->start_date, $this->end_date);
     }
 
@@ -84,12 +84,11 @@ class ProductionPlan extends Model
         $totalProduced = $this->workShifts()
             ->where('status', 'completed')
             ->sum('actual_production');
-        
+
         if ($this->target_quantity == 0) {
             return 0;
         }
-        
+
         return min(100, ($totalProduced / $this->target_quantity) * 100);
     }
 }
-

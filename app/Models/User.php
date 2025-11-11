@@ -78,7 +78,7 @@ class User extends Authenticatable
     public function customPermissions(): BelongsToMany
     {
         return $this->belongsToMany(Permission::class, 'user_permission')
-                    ->withTimestamps();
+            ->withTimestamps();
     }
 
     /**
@@ -106,7 +106,7 @@ class User extends Authenticatable
     {
         // Verificar si el usuario tiene al menos un permiso personalizado configurado
         $hasCustomPermissions = $this->customPermissions()->exists();
-        
+
         if ($hasCustomPermissions) {
             // Si tiene permisos personalizados, SOLO usar esos
             return $this->customPermissions()
@@ -127,7 +127,7 @@ class User extends Authenticatable
         if (is_string($ability) && str_contains($ability, '.')) {
             return $this->hasPermission($ability);
         }
-        
+
         return parent::can($ability, $arguments);
     }
 
@@ -176,11 +176,11 @@ class User extends Authenticatable
      */
     public function getRoleColorAttribute(): string
     {
-        if (!$this->role) {
+        if (! $this->role) {
             return 'gray';
         }
 
-        return match($this->role->name) {
+        return match ($this->role->name) {
             'superadmin' => 'red',
             'admin' => 'orange',
             'gerente' => 'blue',

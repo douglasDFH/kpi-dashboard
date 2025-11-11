@@ -63,11 +63,12 @@ class AuditLog extends Model
      */
     public function getModelNameAttribute(): string
     {
-        if (!$this->model_type) {
+        if (! $this->model_type) {
             return 'N/A';
         }
 
         $parts = explode('\\', $this->model_type);
+
         return end($parts);
     }
 
@@ -76,7 +77,7 @@ class AuditLog extends Model
      */
     public function getActionColorAttribute(): string
     {
-        return match($this->action) {
+        return match ($this->action) {
             'created' => 'green',
             'updated' => 'blue',
             'deleted' => 'red',
