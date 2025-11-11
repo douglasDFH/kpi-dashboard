@@ -1,8 +1,4 @@
-@extends('components.layouts.app')
-
-@section('title', 'Máquinas')
-
-@section('content')
+<x-layouts.app title="Máquinas">
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="flex justify-between items-center mb-6">
         <div>
@@ -73,4 +69,4 @@
         {{ $maquinas->links() }}
     </div>
 </div>
-@endsection
+</x-layouts.app>

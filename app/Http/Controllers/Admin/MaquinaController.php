@@ -16,7 +16,7 @@ class MaquinaController extends Controller
      */
     public function index(): View
     {
-        $maquinas = Maquina::with('area', 'planMaquina')
+        $maquinas = Maquina::with('area', 'planesMaquina')
             ->withTrashed()
             ->orderBy('nombre')
             ->paginate(20);
@@ -70,7 +70,7 @@ class MaquinaController extends Controller
      */
     public function show(Maquina $maquina): View
     {
-        $maquina->load('area', 'planMaquina', 'jornadas', 'registrosMantenimiento');
+        $maquina->load('area', 'planesMaquina', 'jornadas', 'registrosMantenimiento');
 
         return view('admin.maquinas.show', [
             'maquina' => $maquina,

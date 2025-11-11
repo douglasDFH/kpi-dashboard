@@ -1,8 +1,4 @@
-@extends('components.layouts.app')
-
-@section('title', 'Detalle Jornada')
-
-@section('content')
+<x-layouts.app title="Detalle Jornada">
 <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="flex justify-between items-start mb-6">
         <div>
@@ -148,4 +144,4 @@
         }
     </script>
 </div>
-@endsection
+</x-layouts.app>

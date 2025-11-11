@@ -1,8 +1,4 @@
-@extends('components.layouts.app')
-
-@section('title', 'Detalle Mantenimiento')
-
-@section('content')
+<x-layouts.app title="Detalle Mantenimiento">
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="mb-6">
         <h1 class="text-3xl font-bold text-gray-900">Registro de Mantenimiento</h1>
@@ -74,4 +70,4 @@
         <a href="{{ route('supervisor.mantenimiento.index') }}" class="btn-secondary">Volver</a>
     </div>
 </div>
-@endsection
+</x-layouts.app>

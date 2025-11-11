@@ -844,7 +844,7 @@ Los controladores y vistas actuales (EquipmentController, ProductionDataControll
 
 ---
 
-## � Matriz de Cumplimiento de Casos de Uso
+##  Matriz de Cumplimiento de Casos de Uso
 
 | Caso de Uso | BD | Modelos | API | Controladores | Servicios | Vistas | Total |
 |---|---|---|---|---|---|---|---|
@@ -1008,7 +1008,7 @@ php artisan make:controller EmuladorController
 
 ---
 
-## � Gráfico de Progreso Actualizado
+##  Gráfico de Progreso Actualizado
 
 ```
 Fase 1: Base de Datos          [████████████████████] 100% ✅
