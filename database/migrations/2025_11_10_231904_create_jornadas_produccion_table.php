@@ -18,6 +18,10 @@ return new class extends Migration
             $table->foreignId('supervisor_id')->constrained('users')->onDelete('set null');
             $table->enum('status', ['pending', 'running', 'paused', 'completed', 'stopped_critical'])->default('pending');
 
+            // Timestamps Previsto
+            $table->timestamp('inicio_previsto')->nullable();
+            $table->timestamp('fin_previsto')->nullable();
+
             // Timestamps Reales
             $table->timestamp('inicio_real')->nullable();
             $table->timestamp('fin_real')->nullable();

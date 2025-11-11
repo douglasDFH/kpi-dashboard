@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -29,6 +28,11 @@ class DatabaseSeeder extends Seeder
         // Seed production plans
         $this->call([
             PlanMaquinaSeeder::class,
+        ]);
+
+        // Seed work shifts with schedules
+        $this->call([
+            JornadaProduccionSeeder::class,
         ]);
 
         // Seed production data (registros se crean dinámicamente)

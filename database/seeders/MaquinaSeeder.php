@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class MaquinaSeeder extends Seeder
@@ -16,6 +15,7 @@ class MaquinaSeeder extends Seeder
 
         if ($areas->isEmpty()) {
             $this->command->error('❌ No hay áreas creadas. Ejecuta AreaSeeder primero.');
+
             return;
         }
 
@@ -33,23 +33,11 @@ class MaquinaSeeder extends Seeder
                 'modelo' => 'PH-500',
                 'status' => 'idle',
             ],
-            [
-                'area_id' => $areas->where('nombre', 'Área de Prensado')->first()->id,
-                'nombre' => 'Prensa Hidráulica 3',
-                'modelo' => 'PH-750',
-                'status' => 'idle',
-            ],
 
             // Área de Ensamblaje
             [
                 'area_id' => $areas->where('nombre', 'Área de Ensamblaje')->first()->id,
                 'nombre' => 'Estación de Ensamblaje 1',
-                'modelo' => 'EA-200',
-                'status' => 'idle',
-            ],
-            [
-                'area_id' => $areas->where('nombre', 'Área de Ensamblaje')->first()->id,
-                'nombre' => 'Estación de Ensamblaje 2',
                 'modelo' => 'EA-200',
                 'status' => 'idle',
             ],
@@ -61,20 +49,12 @@ class MaquinaSeeder extends Seeder
                 'modelo' => 'CP-300',
                 'status' => 'idle',
             ],
-
-            // Área de Empaque
-            [
-                'area_id' => $areas->where('nombre', 'Área de Empaque')->first()->id,
-                'nombre' => 'Línea de Empaque 1',
-                'modelo' => 'LE-400',
-                'status' => 'idle',
-            ],
         ];
 
         foreach ($maquinas as $maquina) {
             \App\Models\Maquina::create($maquina);
         }
 
-        $this->command->info('✅ Máquinas creadas exitosamente: ' . count($maquinas));
+        $this->command->info('✅ Máquinas creadas exitosamente: '.count($maquinas));
     }
 }
