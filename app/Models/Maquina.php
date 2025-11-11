@@ -76,4 +76,12 @@ class Maquina extends Model
     {
         return $this->hasMany(ResultadoKpiJornada::class, 'maquina_id');
     }
+
+    /**
+     * Scope para máquinas activas
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('status', '!=', 'inactiva')->whereNull('deleted_at');
+    }
 }
