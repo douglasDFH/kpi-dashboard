@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\MaquinaController;
 use App\Http\Controllers\Admin\PlanMaquinaController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EmuladorController;
 use App\Http\Controllers\Supervisor\JornadaController;
 use App\Http\Controllers\Supervisor\MantenimientoController;
 use Illuminate\Support\Facades\Auth;
@@ -24,6 +25,7 @@ Route::get('/', function () {
 Route::middleware(['auth'])->group(function () {
     // Dashboard Route
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
 
     // ============================================
     // Admin Routes (Gestión de datos maestros)
@@ -115,4 +117,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/work-shifts/{workShift}/end', [WorkShiftController::class, 'end'])->name('work-shifts.end');
     Route::post('/work-shifts/{workShift}/record-production', [WorkShiftController::class, 'recordProduction'])->name('work-shifts.record-production');
     */
+});
+
+// Emulador Routes
+Route::prefix('emulador')->name('emulador.')->group(function () {
+    Route::get('/', [EmuladorController::class, 'index'])->name('index');
+    Route::get('/{maquina}', [EmuladorController::class, 'show'])->name('show');
+    Route::post('/emular', [EmuladorController::class, 'emular'])->name('emular');
+    Route::post('/conectar', [EmuladorController::class, 'conectar'])->name('conectar');
 });
