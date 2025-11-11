@@ -13,7 +13,8 @@ console.log('\n🚀 Iniciando KPI Dashboard...\n');
 console.log('📋 Servicios a iniciar:');
 console.log('  1️⃣  Vite Dev Server (npm run dev)');
 console.log('  2️⃣  Laravel Server (php artisan serve)');
-console.log('  3️⃣  Queue Worker (php artisan queue:work)\n');
+console.log('  3️⃣  Laravel Reverb (php artisan reverb:start)');
+console.log('  4️⃣  Queue Worker (php artisan queue:work)\n');
 
 const processes = [];
 let shouldExit = false;
@@ -102,12 +103,14 @@ function startProcess(label, command, args) {
 // Iniciar los servicios
 startProcess('Vite Dev Server', 'npm', ['run', 'dev']);
 startProcess('Laravel Server', 'php', ['artisan', 'serve']);
+startProcess('Laravel Reverb', 'php', ['artisan', 'reverb:start']);
 startProcess('Queue Worker', 'php', ['artisan', 'queue:work']);
 
 console.log('\n✅ Todos los servicios se están iniciando...\n');
 console.log('📍 URLs:');
 console.log('  • Frontend (Vite): http://localhost:5173');
-console.log('  • Laravel API: http://localhost:8000\n');
+console.log('  • Laravel API: http://localhost:8000');
+console.log('  • WebSocket (Reverb): ws://localhost:8080\n');
 
 console.log('⏸  Presiona Ctrl+C para detener todos los servicios.\n');
 
