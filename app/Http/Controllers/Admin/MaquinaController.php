@@ -70,7 +70,7 @@ class MaquinaController extends Controller
      */
     public function show(Maquina $maquina): View
     {
-        $maquina->load('area', 'planesMaquina', 'jornadas', 'registrosMantenimiento');
+        $maquina->load('area', 'planesMaquina', 'jornadasProduccion', 'registrosMantenimiento');
 
         return view('admin.maquinas.show', [
             'maquina' => $maquina,

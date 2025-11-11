@@ -16,7 +16,7 @@
         </div>
         <div class="bg-white rounded-lg shadow p-4">
             <div class="text-sm text-gray-600">Jornadas</div>
-            <div class="text-lg font-bold text-gray-900">{{ $maquina->jornadas->count() }}</div>
+            <div class="text-lg font-bold text-gray-900">{{ $maquina->jornadasProduccion->count() }}</div>
         </div>
     </div>
 
