@@ -30,7 +30,7 @@
                         </div>
                         <div class="ml-3">
                             <p class="text-sm font-medium text-green-900">Jornada Activa</p>
-                            <p class="text-sm text-green-700">Iniciada: {{ $jornadaActiva->fecha_inicio->format('d/m/Y H:i') }}</p>
+                            <p class="text-sm text-green-700">Iniciada: {{ $jornadaActiva->inicio_real->format('d/m/Y H:i') }}</p>
                         </div>
                     </div>
                 @else
