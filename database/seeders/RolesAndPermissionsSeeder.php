@@ -187,8 +187,8 @@ class RolesAndPermissionsSeeder extends Seeder
         // Crear usuarios de ejemplo para cada rol
         $exampleUsers = [
             [
-                'name' => 'Carlos Administrador',
-                'email' => 'carlos@ecoplast.com',
+                'name' => 'Administrador',
+                'email' => 'administrador@ecoplast.com',
                 'password' => Hash::make('password'),
                 'role_id' => $adminRole->id,
                 'is_active' => true,
@@ -205,9 +205,9 @@ class RolesAndPermissionsSeeder extends Seeder
                 'phone' => '+51 999 888 666',
             ],
             [
-                'name' => 'José Supervisor',
-                'email' => 'jose@ecoplast.com',
-                'password' => Hash::make('password'),
+                'name' => 'Carlos Supervisor',
+                'email' => 'carlos@ecoplast.com',
+                'password' => Hash::make('123456'),
                 'role_id' => $supervisorRole->id,
                 'is_active' => true,
                 'position' => 'Supervisor de Turno',
