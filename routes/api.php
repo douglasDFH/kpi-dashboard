@@ -6,8 +6,8 @@ use App\Http\Controllers\Api\V1\Maquina\StatusController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-// API v1 Routes - Máquinas autenticadas con Sanctum
-Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
+// API v1 Routes - Máquinas autenticadas con header personalizado X-Machine-Token
+Route::prefix('v1')->middleware('auth.maquina')->group(function () {
     Route::prefix('maquina')->name('maquina.')->group(function () {
         // Registrar producción (Caso de Uso 3)
         Route::post('/produccion', [ProduccionController::class, 'store'])
