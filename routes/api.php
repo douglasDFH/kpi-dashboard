@@ -2,10 +2,8 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\KpiController;
-use App\Http\Controllers\Api\ProductionDataController;
-use App\Http\Controllers\Api\EquipmentController;
 
+/*
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
@@ -36,3 +34,4 @@ Route::prefix('kpi')->group(function () {
     Route::get('/{equipmentId}/performance', [KpiController::class, 'performance']);
     Route::get('/{equipmentId}/quality', [KpiController::class, 'quality']);
 });
+*/

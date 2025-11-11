@@ -2,34 +2,77 @@
 
 namespace App\Services;
 
-use App\Models\Equipment;
-use App\Models\ProductionData;
-use App\Models\QualityData;
-use App\Models\DowntimeData;
+use App\Services\Contracts\KpiServiceInterface;
+use App\Models\Maquina;
+use App\Models\RegistroProduccion;
+use App\Models\EventoParadaJornada;
+use App\Models\JornadaProduccion;
+use App\Models\PlanMaquina;
+use App\Models\ResultadoKpiJornada;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
-class KpiService
+/**
+ * KPI Service
+ * 
+ * Servicio de cálculo de KPIs según esquema v5 del proyecto.
+ * Fórmula: OEE = Disponibilidad × Rendimiento × Calidad
+ * 
+ * Schema:
+ * - jornadas_produccion: Jornada de trabajo completa de una máquina
+ * - eventos_parada_jornada: Paradas (programadas/no programadas) dentro de una jornada
+ * - registros_produccion: Registros individuales de producción (1:1 o lotes)
+ * - planes_maquina: Plan con ideal_cycle_time_seconds para calcular rendimiento
+ */
+class KpiService implements KpiServiceInterface
 {
     /**
-     * Calcula el OEE (Overall Equipment Effectiveness) para un equipo
-     * OEE = Availability × Performance × Quality
+     * Calcula OEE = Disponibilidad × Rendimiento × Calidad
+     * 
+     * Busca la jornada completada más reciente y sus KPIs pre-calculados,
+     * o calcula en tiempo real si se especifica una jornada activa.
      *
-     * @param int $equipmentId
-     * @param Carbon|null $startDate
-     * @param Carbon|null $endDate
-     * @return array
+     * @param string $maquinaId UUID de la máquina
+     * @param Carbon|null $startDate (ignorado en esta versión - usa jornadas)
+     * @param Carbon|null $endDate (ignorado en esta versión - usa jornadas)
+     * @return array ['oee' => float, 'availability' => float, 'performance' => float, 'quality' => float, 'period' => [...]]
      */
-    public function calculateOEE(int $equipmentId, ?Carbon $startDate = null, ?Carbon $endDate = null): array
+    public function calculateOEE(string $maquinaId, ?Carbon $startDate = null, ?Carbon $endDate = null): array
     {
-        // Por defecto, usar últimos 30 días para tener más datos
-        $startDate = $startDate ?? Carbon::now()->subDays(30)->startOfDay();
-        $endDate = $endDate ?? Carbon::now()->endOfDay();
+        // Buscar jornada más reciente completada (status: 'completed')
+        $jornada = JornadaProduccion::where('maquina_id', $maquinaId)
+            ->where('status', 'completed')
+            ->latest('fin_real')
+            ->first();
 
-        $availability = $this->calculateAvailability($equipmentId, $startDate, $endDate);
-        $performance = $this->calculatePerformance($equipmentId, $startDate, $endDate);
-        $quality = $this->calculateQuality($equipmentId, $startDate, $endDate);
+        if (!$jornada) {
+            // Si no hay jornada completada, intentar usar la activa
+            $jornada = JornadaProduccion::where('maquina_id', $maquinaId)
+                ->where('status', 'running')
+                ->latest('inicio_real')
+                ->first();
 
+            if (!$jornada) {
+                // Sin jornada, devolver ceros
+                return [
+                    'oee' => 0.00,
+                    'availability' => 0.00,
+                    'performance' => 0.00,
+                    'quality' => 0.00,
+                    'period' => [
+                        'start' => null,
+                        'end' => null,
+                    ],
+                ];
+            }
+        }
+
+        // Calcular componentes
+        $availability = $this->calculateAvailability($maquinaId, $jornada->id);
+        $performance = $this->calculatePerformance($maquinaId, $jornada->id);
+        $quality = $this->calculateQuality($maquinaId, $jornada->id);
+
+        // OEE = A × P × Q (ya en %)
         $oee = ($availability / 100) * ($performance / 100) * ($quality / 100) * 100;
 
         return [
@@ -38,162 +81,190 @@ class KpiService
             'performance' => round($performance, 2),
             'quality' => round($quality, 2),
             'period' => [
-                'start' => $startDate->toDateTimeString(),
-                'end' => $endDate->toDateTimeString(),
+                'start' => $jornada->inicio_real?->toDateTimeString(),
+                'end' => $jornada->fin_real?->toDateTimeString(),
             ],
         ];
     }
 
     /**
-     * Calcula la disponibilidad (Availability)
-     * Availability = (Planned Production Time - Downtime) / Planned Production Time × 100
+     * Calcula Disponibilidad (Availability)
+     * 
+     * Disponibilidad = (Tiempo Planificado - Tiempo de Paradas) / Tiempo Planificado × 100
+     * 
+     * Tiempo Planificado: inicio_real a fin_real (o hasta ahora si activa)
+     * Tiempo de Paradas: suma de (fin_parada - inicio_parada) de eventos_parada_jornada
      *
-     * @param int $equipmentId
-     * @param Carbon $startDate
-     * @param Carbon $endDate
-     * @return float
+     * @param string $maquinaId UUID de la máquina
+     * @param string $jornadaId UUID de la jornada
+     * @return float Porcentaje 0-100
      */
-    public function calculateAvailability(int $equipmentId, Carbon $startDate, Carbon $endDate): float
+    public function calculateAvailability(string $maquinaId, string $jornadaId): float
     {
-        // Tiempo planificado en minutos (8 horas por día como ejemplo)
-        $plannedProductionTime = $startDate->diffInMinutes($endDate);
+        $jornada = JornadaProduccion::where('id', $jornadaId)
+            ->where('maquina_id', $maquinaId)
+            ->first();
 
-        // Total de downtime en minutos
-        $totalDowntime = DowntimeData::where('equipment_id', $equipmentId)
-            ->whereBetween('start_time', [$startDate, $endDate])
-            ->sum('duration_minutes');
-
-        if ($plannedProductionTime == 0) {
-            return 0;
+        if (!$jornada || !$jornada->inicio_real) {
+            return 0.0;
         }
 
-        $runTime = $plannedProductionTime - $totalDowntime;
-        return ($runTime / $plannedProductionTime) * 100;
+        // Tiempo planificado en minutos
+        $inicio = $jornada->inicio_real;
+        $fin = $jornada->fin_real ?? Carbon::now();
+        $tiempoPlaneado = $inicio->diffInMinutes($fin);
+
+        if ($tiempoPlaneado == 0) {
+            return 0.0;
+        }
+
+        // Sumar tiempo de todas las paradas en esta jornada
+        $tiempoParadas = EventoParadaJornada::where('jornada_id', $jornadaId)
+            ->get()
+            ->sum(function ($evento) {
+                $inicio = $evento->inicio_parada;
+                $fin = $evento->fin_parada ?? Carbon::now();
+                return $inicio->diffInMinutes($fin);
+            });
+
+        $tiempoActivo = $tiempoPlaneado - $tiempoParadas;
+        return ($tiempoActivo / $tiempoPlaneado) * 100;
     }
 
     /**
-     * Calcula el rendimiento (Performance)
-     * Performance = (Ideal Cycle Time × Total Count) / Run Time × 100
+     * Calcula Rendimiento (Performance)
+     * 
+     * Rendimiento = (Tiempo Ideal × Unidades Producidas) / Tiempo de Operación Real × 100
+     * 
+     * Tiempo Ideal = ideal_cycle_time_seconds del plan
+     * Unidades Producidas = total_unidades_producidas de la jornada
+     * Tiempo Operación Real = Disponibilidad × Tiempo Planificado (sin paradas)
      *
-     * @param int $equipmentId
-     * @param Carbon $startDate
-     * @param Carbon $endDate
-     * @return float
+     * @param string $maquinaId UUID de la máquina
+     * @param string $jornadaId UUID de la jornada
+     * @return float Porcentaje 0-100
      */
-    public function calculatePerformance(int $equipmentId, Carbon $startDate, Carbon $endDate): float
+    public function calculatePerformance(string $maquinaId, string $jornadaId): float
     {
-        $productionData = ProductionData::where('equipment_id', $equipmentId)
-            ->whereBetween('production_date', [$startDate, $endDate])
+        $jornada = JornadaProduccion::where('id', $jornadaId)
+            ->where('maquina_id', $maquinaId)
+            ->first();
+
+        if (!$jornada || !$jornada->inicio_real) {
+            return 0.0;
+        }
+
+        // Obtener el plan con ideal_cycle_time_seconds
+        $plan = PlanMaquina::find($jornada->plan_maquina_id);
+        if (!$plan || $plan->ideal_cycle_time_seconds == 0) {
+            return 0.0;
+        }
+
+        // Unidades producidas (total agregado en la jornada)
+        $unidadesProducidas = $jornada->total_unidades_producidas ?? 0;
+
+        if ($unidadesProducidas == 0) {
+            return 0.0;
+        }
+
+        // Tiempo de operación real = tiempo disponible (sin paradas)
+        $inicio = $jornada->inicio_real;
+        $fin = $jornada->fin_real ?? Carbon::now();
+        $tiempoPlaneado = $inicio->diffInSeconds($fin);
+
+        // Restar tiempo de paradas
+        $tiempoParadas = EventoParadaJornada::where('jornada_id', $jornadaId)
+            ->get()
+            ->sum(function ($evento) {
+                $inicio = $evento->inicio_parada;
+                $fin = $evento->fin_parada ?? Carbon::now();
+                return $inicio->diffInSeconds($fin);
+            });
+
+        $tiempoOperacion = $tiempoPlaneado - $tiempoParadas;
+
+        if ($tiempoOperacion == 0) {
+            return 0.0;
+        }
+
+        // Performance = (Tiempo Ideal × Unidades) / Tiempo Real × 100
+        $tiempoIdeal = $plan->ideal_cycle_time_seconds * $unidadesProducidas;
+        return ($tiempoIdeal / $tiempoOperacion) * 100;
+    }
+
+    /**
+     * Calcula Calidad (Quality)
+     * 
+     * Calidad = Unidades Buenas / Unidades Totales × 100
+     * 
+     * Unidades Buenas = suma de cantidad_buena de registros_produccion
+     * Unidades Totales = suma de cantidad_producida de registros_produccion
+     *
+     * @param string $maquinaId UUID de la máquina
+     * @param string $jornadaId UUID de la jornada
+     * @return float Porcentaje 0-100
+     */
+    public function calculateQuality(string $maquinaId, string $jornadaId): float
+    {
+        // Sumar registros de producción de esta jornada
+        $registros = RegistroProduccion::where('jornada_id', $jornadaId)
+            ->where('maquina_id', $maquinaId)
             ->get();
 
-        if ($productionData->isEmpty()) {
-            return 0;
+        if ($registros->isEmpty()) {
+            return 0.0;
         }
 
-        $totalActualProduction = $productionData->sum('actual_production');
-        $totalPlannedProduction = $productionData->sum('planned_production');
+        $totalUnidades = $registros->sum('cantidad_producida');
+        $unidadesBuenas = $registros->sum('cantidad_buena');
 
-        if ($totalPlannedProduction == 0) {
-            return 0;
+        if ($totalUnidades == 0) {
+            return 0.0;
         }
 
-        return ($totalActualProduction / $totalPlannedProduction) * 100;
+        return ($unidadesBuenas / $totalUnidades) * 100;
     }
 
     /**
-     * Calcula la calidad (Quality)
-     * Quality = Good Units / Total Units × 100
+     * Calcula métricas adicionales de una jornada
      *
-     * @param int $equipmentId
-     * @param Carbon $startDate
-     * @param Carbon $endDate
-     * @return float
+     * @param string $maquinaId UUID de la máquina
+     * @param string|null $jornadaId UUID de la jornada (si null, usa última)
+     * @return array Métricas: total_producido, total_bueno, total_malo, objetivo, cobertura
      */
-    public function calculateQuality(int $equipmentId, Carbon $startDate, Carbon $endDate): float
+    public function calculateAdditionalMetrics(string $maquinaId, ?string $jornadaId = null): array
     {
-        $productionData = ProductionData::where('equipment_id', $equipmentId)
-            ->whereBetween('production_date', [$startDate, $endDate])
-            ->get();
-
-        if ($productionData->isEmpty()) {
-            return 0;
+        if (!$jornadaId) {
+            $jornada = JornadaProduccion::where('maquina_id', $maquinaId)
+                ->latest('created_at')
+                ->first();
+        } else {
+            $jornada = JornadaProduccion::find($jornadaId);
         }
 
-        $totalGoodUnits = $productionData->sum('good_units');
-        $totalActualProduction = $productionData->sum('actual_production');
-
-        if ($totalActualProduction == 0) {
-            return 0;
-        }
-
-        return ($totalGoodUnits / $totalActualProduction) * 100;
-    }
-
-    /**
-     * Obtiene un resumen de KPIs para todos los equipos
-     *
-     * @param Carbon|null $startDate
-     * @param Carbon|null $endDate
-     * @return array
-     */
-    public function getAllEquipmentKPIs(?Carbon $startDate = null, ?Carbon $endDate = null): array
-    {
-        $equipment = Equipment::where('is_active', true)->get();
-        $kpis = [];
-
-        foreach ($equipment as $eq) {
-            $kpis[] = [
-                'equipment_id' => $eq->id,
-                'equipment_name' => $eq->name,
-                'equipment_code' => $eq->code,
-                'kpis' => $this->calculateOEE($eq->id, $startDate, $endDate),
+        if (!$jornada) {
+            return [
+                'total_producido' => 0,
+                'total_bueno' => 0,
+                'total_malo' => 0,
+                'objetivo' => 0,
+                'cobertura' => 0.0,
             ];
         }
 
-        return $kpis;
-    }
+        $totalProducido = $jornada->total_unidades_producidas ?? 0;
+        $totalBueno = $jornada->total_unidades_buenas ?? 0;
+        $totalMalo = $jornada->total_unidades_malas ?? 0;
+        $objetivo = $jornada->objetivo_unidades_copiado ?? 0;
 
-    /**
-     * Calcula métricas adicionales
-     *
-     * @param int $equipmentId
-     * @param Carbon|null $startDate
-     * @param Carbon|null $endDate
-     * @return array
-     */
-    public function calculateAdditionalMetrics(int $equipmentId, ?Carbon $startDate = null, ?Carbon $endDate = null): array
-    {
-        // Por defecto, usar últimos 30 días para coincidir con calculateOEE
-        $startDate = $startDate ?? Carbon::now()->subDays(30)->startOfDay();
-        $endDate = $endDate ?? Carbon::now()->endOfDay();
-
-        // Producción total
-        $totalProduction = ProductionData::where('equipment_id', $equipmentId)
-            ->whereBetween('production_date', [$startDate, $endDate])
-            ->sum('actual_production');
-
-        // Unidades defectuosas
-        $defectiveUnits = ProductionData::where('equipment_id', $equipmentId)
-            ->whereBetween('production_date', [$startDate, $endDate])
-            ->sum('defective_units');
-
-        // Total downtime
-        $totalDowntime = DowntimeData::where('equipment_id', $equipmentId)
-            ->whereBetween('start_time', [$startDate, $endDate])
-            ->sum('duration_minutes');
-
-        // Downtime por categoría
-        $downtimeByCategory = DowntimeData::where('equipment_id', $equipmentId)
-            ->whereBetween('start_time', [$startDate, $endDate])
-            ->select('category', DB::raw('SUM(duration_minutes) as total_minutes'))
-            ->groupBy('category')
-            ->get();
+        $cobertura = $objetivo > 0 ? ($totalProducido / $objetivo) * 100 : 0.0;
 
         return [
-            'total_production' => $totalProduction,
-            'defective_units' => $defectiveUnits,
-            'total_downtime_minutes' => $totalDowntime,
-            'downtime_by_category' => $downtimeByCategory,
+            'total_producido' => $totalProducido,
+            'total_bueno' => $totalBueno,
+            'total_malo' => $totalMalo,
+            'objetivo' => $objetivo,
+            'cobertura' => round($cobertura, 2),
         ];
     }
 }

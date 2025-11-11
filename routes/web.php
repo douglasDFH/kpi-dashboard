@@ -4,15 +4,6 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\EquipmentController;
-use App\Http\Controllers\ProductionDataController;
-use App\Http\Controllers\DowntimeDataController;
-use App\Http\Controllers\QualityDataController;
-use App\Http\Controllers\ReportController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\AuditLogController;
-use App\Http\Controllers\ProductionPlanController;
-use App\Http\Controllers\WorkShiftController;
 
 // Authentication Routes
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login')->middleware('guest');
@@ -29,6 +20,7 @@ Route::middleware(['auth'])->group(function () {
     // Dashboard Route
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    /*
     // Equipment Management Routes
     Route::resource('equipment', EquipmentController::class);
 
@@ -72,10 +64,5 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('work-shifts', WorkShiftController::class)->except(['edit', 'update']);
     Route::post('/work-shifts/{workShift}/end', [WorkShiftController::class, 'end'])->name('work-shifts.end');
     Route::post('/work-shifts/{workShift}/record-production', [WorkShiftController::class, 'recordProduction'])->name('work-shifts.record-production');
+    */
 });
-Route::resource('users', UserController::class);
-Route::post('users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggle-active');
-
-// Audit Log Routes
-Route::get('audit', [AuditLogController::class, 'index'])->name('audit.index');
-Route::get('audit/{auditLog}', [AuditLogController::class, 'show'])->name('audit.show');
