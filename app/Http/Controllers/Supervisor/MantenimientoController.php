@@ -15,9 +15,7 @@ class MantenimientoController extends Controller
 {
     public function __construct(
         private MantenimientoServiceInterface $mantenimientoService
-    ) {
-        $this->middleware('auth');
-    }
+    ) {}
 
     /**
      * Display a listing of maintenance records

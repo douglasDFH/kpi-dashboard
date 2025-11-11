@@ -11,11 +11,6 @@ use Illuminate\View\View;
 
 class PlanMaquinaController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-    }
-
     /**
      * Display a listing of production plans
      */

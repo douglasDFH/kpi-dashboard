@@ -4,6 +4,11 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Admin\MaquinaController;
+use App\Http\Controllers\Admin\PlanMaquinaController;
+use App\Http\Controllers\Admin\AreaController;
+use App\Http\Controllers\Supervisor\JornadaController;
+use App\Http\Controllers\Supervisor\MantenimientoController;
 
 // Authentication Routes
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login')->middleware('guest');
@@ -19,6 +24,51 @@ Route::get('/', function () {
 Route::middleware(['auth'])->group(function () {
     // Dashboard Route
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // ============================================
+    // Admin Routes (Gestión de datos maestros)
+    // ============================================
+    Route::prefix('admin')->name('admin.')->group(function () {
+        // Máquinas
+        Route::resource('maquinas', MaquinaController::class);
+        Route::post('maquinas/{id}/restore', [MaquinaController::class, 'restore'])
+            ->name('maquinas.restore');
+        Route::delete('maquinas/{id}/force-delete', [MaquinaController::class, 'forceDelete'])
+            ->name('maquinas.forceDelete');
+
+        // Planes de Producción
+        Route::resource('planes', PlanMaquinaController::class);
+        Route::post('planes/{id}/restore', [PlanMaquinaController::class, 'restore'])
+            ->name('planes.restore');
+        Route::delete('planes/{id}/force-delete', [PlanMaquinaController::class, 'forceDelete'])
+            ->name('planes.forceDelete');
+
+        // Áreas
+        Route::resource('areas', AreaController::class);
+        Route::post('areas/{id}/restore', [AreaController::class, 'restore'])
+            ->name('areas.restore');
+        Route::delete('areas/{id}/force-delete', [AreaController::class, 'forceDelete'])
+            ->name('areas.forceDelete');
+    });
+
+    // ============================================
+    // Supervisor Routes (Operación diaria)
+    // ============================================
+    Route::prefix('supervisor')->name('supervisor.')->group(function () {
+        // Jornadas de Producción
+        Route::resource('jornadas', JornadaController::class);
+        Route::post('jornadas/{jornada}/pausar', [JornadaController::class, 'pausar'])
+            ->name('jornadas.pausar');
+        Route::post('jornadas/{jornada}/reanudar', [JornadaController::class, 'reanudar'])
+            ->name('jornadas.reanudar');
+        Route::post('jornadas/{jornada}/finalizar', [JornadaController::class, 'finalizar'])
+            ->name('jornadas.finalizar');
+
+        // Mantenimiento
+        Route::resource('mantenimiento', MantenimientoController::class);
+        Route::get('mantenimiento/maquina/{maquina}', [MantenimientoController::class, 'historialMaquina'])
+            ->name('mantenimiento.historial');
+    });
 
     /*
     // Equipment Management Routes

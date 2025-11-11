@@ -18,9 +18,7 @@ class JornadaController extends Controller
 {
     public function __construct(
         private JornadaServiceInterface $jornadaService
-    ) {
-        $this->middleware('auth');
-    }
+    ) {}
 
     /**
      * Display a listing of jornadas
