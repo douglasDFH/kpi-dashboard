@@ -26,7 +26,7 @@ return new class extends Migration
             $table->foreignId('operator_id')->nullable()->constrained('users')->onDelete('set null'); // Operador del turno
             $table->text('notes')->nullable(); // Notas de la jornada
             $table->timestamps();
-            
+
             // Índices
             $table->index(['equipment_id', 'status']);
             $table->index(['start_time', 'end_time']);

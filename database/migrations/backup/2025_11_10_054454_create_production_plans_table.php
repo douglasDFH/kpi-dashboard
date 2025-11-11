@@ -24,7 +24,7 @@ return new class extends Migration
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade'); // Usuario que creó el plan
             $table->text('notes')->nullable(); // Notas adicionales
             $table->timestamps();
-            
+
             // Índices para consultas frecuentes
             $table->index(['equipment_id', 'status']);
             $table->index(['start_date', 'end_date']);
