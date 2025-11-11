@@ -69,24 +69,24 @@ class PlanMaquinaController extends Controller
     /**
      * Display the specified plan
      */
-    public function show(PlanMaquina $plan): View
+    public function show(PlanMaquina $plane): View
     {
-        $plan->load('maquina', 'jornadas');
+        $plane->load('maquina', 'jornadasProduccion');
 
         return view('admin.planes.show', [
-            'plan' => $plan,
+            'plan' => $plane,
         ]);
     }
 
     /**
      * Show the form for editing plan
      */
-    public function edit(PlanMaquina $plan): View
+    public function edit(PlanMaquina $plane): View
     {
         $maquinas = Maquina::active()->get();
 
         return view('admin.planes.edit', [
-            'plan' => $plan,
+            'plan' => $plane,
             'maquinas' => $maquinas,
         ]);
     }
@@ -94,21 +94,23 @@ class PlanMaquinaController extends Controller
     /**
      * Update the specified plan
      */
-    public function update(Request $request, PlanMaquina $plan): RedirectResponse
+    public function update(Request $request, PlanMaquina $plane): RedirectResponse
     {
         $validated = $request->validate([
-            'nombre' => 'required|string|max:100',
-            'descripcion' => 'nullable|string|max:500',
-            'tiempo_ciclo_ideal_segundos' => 'required|integer|min:1|max:3600',
-            'objetivo_produccion_diaria' => 'required|integer|min:1|max:999999',
-            'fecha_fin' => 'nullable|date|after:fecha_inicio',
+            'maquina_id' => 'required|uuid|exists:maquinas,id',
+            'nombre_plan' => 'required|string|max:100',
+            'objetivo_unidades' => 'required|integer|min:1|max:999999',
+            'ideal_cycle_time_seconds' => 'required|numeric|min:1|max:3600',
+            'unidad_medida' => 'nullable|string|max:50',
+            'limite_fallos_critico' => 'nullable|integer|min:0',
+            'activo' => 'nullable|boolean',
         ]);
 
         try {
-            $plan->update($validated);
+            $plane->update($validated);
 
             return redirect()
-                ->route('admin.planes.show', $plan)
+                ->route('admin.planes.show', $plane)
                 ->with('success', 'Plan actualizado exitosamente');
         } catch (\Exception $e) {
             return redirect()
@@ -120,9 +122,9 @@ class PlanMaquinaController extends Controller
     /**
      * Soft delete the specified plan
      */
-    public function destroy(PlanMaquina $plan): RedirectResponse
+    public function destroy(PlanMaquina $plane): RedirectResponse
     {
-        $plan->delete();
+        $plane->delete();
 
         return redirect()
             ->route('admin.planes.index')
