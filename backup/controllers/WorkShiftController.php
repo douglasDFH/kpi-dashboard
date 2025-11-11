@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\WorkShift;
 use App\Models\Equipment;
 use App\Models\ProductionPlan;
+use App\Models\WorkShift;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -96,6 +96,7 @@ class WorkShiftController extends Controller
     public function show(WorkShift $workShift)
     {
         $workShift->load(['equipment', 'plan', 'operator']);
+
         return view('work-shifts.show', compact('workShift'));
     }
 
@@ -123,7 +124,7 @@ class WorkShiftController extends Controller
         if ($workShift->status !== 'active') {
             return response()->json([
                 'success' => false,
-                'message' => 'Esta jornada no está activa.'
+                'message' => 'Esta jornada no está activa.',
             ], 400);
         }
 
@@ -137,7 +138,7 @@ class WorkShiftController extends Controller
         if ($validated['quantity'] != ($validated['good_units'] + $validated['defective_units'])) {
             return response()->json([
                 'success' => false,
-                'message' => 'La cantidad total debe ser igual a la suma de unidades buenas y defectuosas.'
+                'message' => 'La cantidad total debe ser igual a la suma de unidades buenas y defectuosas.',
             ], 400);
         }
 
@@ -156,7 +157,7 @@ class WorkShiftController extends Controller
                 'defective_units' => $workShift->defective_units,
                 'progress' => $workShift->progress,
                 'quality_rate' => $workShift->quality_rate,
-            ]
+            ],
         ]);
     }
 
@@ -177,4 +178,3 @@ class WorkShiftController extends Controller
             ->with('success', 'Jornada eliminada exitosamente.');
     }
 }
-

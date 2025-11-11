@@ -2,19 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Traits\AuthorizesPermissions;
+use App\Models\DowntimeData;
 use App\Models\Equipment;
 use App\Models\ProductionData;
 use App\Models\QualityData;
-use App\Models\DowntimeData;
 use App\Services\KpiService;
-use Illuminate\Http\Request;
-use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
-use App\Http\Controllers\Traits\AuthorizesPermissions;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class ReportController extends Controller
 {
     use AuthorizesPermissions;
+
     protected $kpiService;
 
     public function __construct(KpiService $kpiService)
@@ -28,8 +29,9 @@ class ReportController extends Controller
     public function index()
     {
         $this->authorizePermission('reports.view', 'No tienes permiso para ver reportes.');
-        
+
         $equipment = Equipment::where('is_active', true)->get();
+
         return view('reports.index', compact('equipment'));
     }
 
@@ -105,13 +107,13 @@ class ReportController extends Controller
         ];
 
         // Preparar datos para el gráfico
-        $chartData = $productionData->map(function($prod) {
+        $chartData = $productionData->map(function ($prod) {
             return [
                 'date' => $prod->production_date->format('d/m'),
                 'equipment' => $prod->equipment->name,
                 'planned' => $prod->planned_production,
                 'actual' => $prod->actual_production,
-                'good' => $prod->good_units
+                'good' => $prod->good_units,
             ];
         })->values();
 
@@ -250,6 +252,7 @@ class ReportController extends Controller
     public function custom()
     {
         $equipment = Equipment::where('is_active', true)->get();
+
         return view('reports.custom', compact('equipment'));
     }
 
@@ -259,7 +262,7 @@ class ReportController extends Controller
     public function generateCustomReport(Request $request)
     {
         $this->authorizePermission('reports.view', 'No tienes permiso para generar reportes.');
-        
+
         $validated = $request->validate([
             'equipment_ids' => 'required|array|min:1',
             'equipment_ids.*' => 'exists:equipment,id',
@@ -354,15 +357,15 @@ class ReportController extends Controller
     public function exportCustomReport(Request $request)
     {
         $this->authorizePermission('reports.export', 'No tienes permiso para exportar reportes.');
-        
+
         $validated = $request->validate([
             'format' => 'required|in:pdf,excel,csv',
         ]);
 
         // Get report data from session or regenerate
         $reportData = $request->input('report_data');
-        
-        if (!$reportData) {
+
+        if (! $reportData) {
             return response()->json([
                 'success' => false,
                 'message' => 'No hay datos de reporte para exportar',
@@ -370,7 +373,7 @@ class ReportController extends Controller
         }
 
         $data = json_decode($reportData, true);
-        
+
         if ($validated['format'] === 'pdf') {
             return $this->exportToPdf($data);
         } elseif ($validated['format'] === 'csv') {
@@ -391,13 +394,21 @@ class ReportController extends Controller
         $data = $reportData['data'];
         $period = $reportData['period'];
         $selectedMetrics = [];
-        
+
         // Determinar qué métricas están incluidas
         if (isset($data[0])) {
-            if (isset($data[0]['oee'])) $selectedMetrics[] = 'oee';
-            if (isset($data[0]['production'])) $selectedMetrics[] = 'producción';
-            if (isset($data[0]['quality'])) $selectedMetrics[] = 'calidad';
-            if (isset($data[0]['downtime'])) $selectedMetrics[] = 'downtime';
+            if (isset($data[0]['oee'])) {
+                $selectedMetrics[] = 'oee';
+            }
+            if (isset($data[0]['production'])) {
+                $selectedMetrics[] = 'producción';
+            }
+            if (isset($data[0]['quality'])) {
+                $selectedMetrics[] = 'calidad';
+            }
+            if (isset($data[0]['downtime'])) {
+                $selectedMetrics[] = 'downtime';
+            }
         }
 
         $pdf = Pdf::loadView('reports.custom-pdf', [
@@ -406,8 +417,8 @@ class ReportController extends Controller
             'selectedMetrics' => $selectedMetrics,
         ]);
 
-        $filename = 'reporte-personalizado-' . date('Y-m-d-His') . '.pdf';
-        
+        $filename = 'reporte-personalizado-'.date('Y-m-d-His').'.pdf';
+
         return $pdf->download($filename);
     }
 
@@ -418,9 +429,9 @@ class ReportController extends Controller
     {
         $data = $reportData['data'];
         $period = $reportData['period'];
-        
-        $filename = 'reporte-personalizado-' . date('Y-m-d-His') . '.csv';
-        
+
+        $filename = 'reporte-personalizado-'.date('Y-m-d-His').'.csv';
+
         $headers = [
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => "attachment; filename=\"$filename\"",
@@ -429,35 +440,35 @@ class ReportController extends Controller
             'Expires' => '0',
         ];
 
-        $callback = function() use ($data, $period) {
+        $callback = function () use ($data, $period) {
             $file = fopen('php://output', 'w');
-            
+
             // BOM para UTF-8
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
-            
+
             // Información del reporte
             fputcsv($file, ['REPORTE PERSONALIZADO - METALURGICA PRECISION S.A.']);
-            fputcsv($file, ['Período', $period['start'] . ' - ' . $period['end']]);
+            fputcsv($file, ['Período', $period['start'].' - '.$period['end']]);
             fputcsv($file, ['Generado', date('d/m/Y H:i:s')]);
             fputcsv($file, []);
-            
+
             foreach ($data as $equipmentData) {
                 // Nombre del equipo
                 fputcsv($file, []);
                 fputcsv($file, ['EQUIPO', $equipmentData['equipment']['name'], 'Código', $equipmentData['equipment']['code']]);
                 fputcsv($file, []);
-                
+
                 // OEE
                 if (isset($equipmentData['oee'])) {
                     fputcsv($file, ['INDICADORES OEE']);
                     fputcsv($file, ['Métrica', 'Valor']);
-                    fputcsv($file, ['OEE', $equipmentData['oee']['oee'] . '%']);
-                    fputcsv($file, ['Disponibilidad', $equipmentData['oee']['availability'] . '%']);
-                    fputcsv($file, ['Rendimiento', $equipmentData['oee']['performance'] . '%']);
-                    fputcsv($file, ['Calidad', $equipmentData['oee']['quality'] . '%']);
+                    fputcsv($file, ['OEE', $equipmentData['oee']['oee'].'%']);
+                    fputcsv($file, ['Disponibilidad', $equipmentData['oee']['availability'].'%']);
+                    fputcsv($file, ['Rendimiento', $equipmentData['oee']['performance'].'%']);
+                    fputcsv($file, ['Calidad', $equipmentData['oee']['quality'].'%']);
                     fputcsv($file, []);
                 }
-                
+
                 // Producción
                 if (isset($equipmentData['production'])) {
                     fputcsv($file, ['MÉTRICAS DE PRODUCCIÓN']);
@@ -465,10 +476,10 @@ class ReportController extends Controller
                     fputcsv($file, ['Planificado', number_format($equipmentData['production']['total_planned'], 0, ',', '.')]);
                     fputcsv($file, ['Producido', number_format($equipmentData['production']['total_actual'], 0, ',', '.')]);
                     fputcsv($file, ['Unidades Buenas', number_format($equipmentData['production']['total_good'], 0, ',', '.')]);
-                    fputcsv($file, ['Eficiencia', number_format($equipmentData['production']['efficiency'], 2, ',', '.') . '%']);
+                    fputcsv($file, ['Eficiencia', number_format($equipmentData['production']['efficiency'], 2, ',', '.').'%']);
                     fputcsv($file, []);
                 }
-                
+
                 // Calidad
                 if (isset($equipmentData['quality'])) {
                     fputcsv($file, ['MÉTRICAS DE CALIDAD']);
@@ -476,10 +487,10 @@ class ReportController extends Controller
                     fputcsv($file, ['Inspeccionado', number_format($equipmentData['quality']['total_inspected'], 0, ',', '.')]);
                     fputcsv($file, ['Aprobadas', number_format($equipmentData['quality']['total_approved'], 0, ',', '.')]);
                     fputcsv($file, ['Rechazadas', number_format($equipmentData['quality']['total_rejected'], 0, ',', '.')]);
-                    fputcsv($file, ['Tasa de Calidad', number_format($equipmentData['quality']['quality_rate'], 2, ',', '.') . '%']);
+                    fputcsv($file, ['Tasa de Calidad', number_format($equipmentData['quality']['quality_rate'], 2, ',', '.').'%']);
                     fputcsv($file, []);
                 }
-                
+
                 // Downtime
                 if (isset($equipmentData['downtime'])) {
                     fputcsv($file, ['TIEMPOS MUERTOS']);
@@ -490,10 +501,10 @@ class ReportController extends Controller
                     fputcsv($file, ['No Planificado', number_format($equipmentData['downtime']['unplanned'], 0, ',', '.')]);
                     fputcsv($file, []);
                 }
-                
+
                 fputcsv($file, ['----------------------------------------']);
             }
-            
+
             fclose($file);
         };
 

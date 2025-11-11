@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\ProductionDataUpdated;
 use App\Http\Controllers\Controller;
 use App\Models\ProductionData;
-use App\Events\ProductionDataUpdated;
 use Illuminate\Http\Request;
 
 class ProductionDataController extends Controller

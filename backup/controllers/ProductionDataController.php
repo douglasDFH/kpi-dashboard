@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ProductionData;
-use App\Models\Equipment;
 use App\Events\ProductionDataUpdated;
-use Illuminate\Http\Request;
-use Carbon\Carbon;
 use App\Http\Controllers\Traits\AuthorizesPermissions;
+use App\Models\Equipment;
+use App\Models\ProductionData;
+use Illuminate\Http\Request;
 
 class ProductionDataController extends Controller
 {
@@ -50,6 +49,7 @@ class ProductionDataController extends Controller
         $this->authorizePermission('production.create', 'No tienes permiso para crear datos de producción.');
 
         $equipment = Equipment::where('is_active', true)->get();
+
         return view('production.create', compact('equipment'));
     }
 
@@ -73,7 +73,7 @@ class ProductionDataController extends Controller
         // Validar que good_units + defective_units = actual_production
         if (($validated['good_units'] + $validated['defective_units']) != $validated['actual_production']) {
             return back()->withErrors([
-                'actual_production' => 'La suma de unidades buenas y defectuosas debe ser igual a la producción real.'
+                'actual_production' => 'La suma de unidades buenas y defectuosas debe ser igual a la producción real.',
             ])->withInput();
         }
 
@@ -94,6 +94,7 @@ class ProductionDataController extends Controller
         $this->authorizePermission('production.edit', 'No tienes permiso para editar datos de producción.');
 
         $equipment = Equipment::where('is_active', true)->get();
+
         return view('production.edit', compact('production', 'equipment'));
     }
 
@@ -117,7 +118,7 @@ class ProductionDataController extends Controller
         // Validar que good_units + defective_units = actual_production
         if (($validated['good_units'] + $validated['defective_units']) != $validated['actual_production']) {
             return back()->withErrors([
-                'actual_production' => 'La suma de unidades buenas y defectuosas debe ser igual a la producción real.'
+                'actual_production' => 'La suma de unidades buenas y defectuosas debe ser igual a la producción real.',
             ])->withInput();
         }
 

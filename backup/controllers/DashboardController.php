@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\KpiService;
 use App\Models\Equipment;
-use Illuminate\Http\Request;
+use App\Services\KpiService;
 
 class DashboardController extends Controller
 {

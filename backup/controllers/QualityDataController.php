@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\QualityData;
-use App\Models\Equipment;
 use App\Events\ProductionDataUpdated;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Traits\AuthorizesPermissions;
+use App\Models\Equipment;
+use App\Models\QualityData;
+use Illuminate\Http\Request;
 
 class QualityDataController extends Controller
 {
@@ -18,7 +18,7 @@ class QualityDataController extends Controller
     public function index(Request $request)
     {
         $this->authorizePermission('quality.view', 'No tienes permiso para ver datos de calidad.');
-        
+
         $query = QualityData::with('equipment')->orderBy('inspection_date', 'desc');
 
         // Filtro por equipo
@@ -61,6 +61,7 @@ class QualityDataController extends Controller
         $this->authorizePermission('quality.create', 'No tienes permiso para crear datos de calidad.');
 
         $equipment = Equipment::where('is_active', true)->get();
+
         return view('quality.create', compact('equipment'));
     }
 
@@ -84,7 +85,7 @@ class QualityDataController extends Controller
         // Validar que aprobadas + rechazadas = total
         if (($validated['approved_units'] + $validated['rejected_units']) != $validated['total_inspected']) {
             return back()->withErrors([
-                'total_inspected' => 'La suma de unidades aprobadas y rechazadas debe ser igual al total inspeccionado.'
+                'total_inspected' => 'La suma de unidades aprobadas y rechazadas debe ser igual al total inspeccionado.',
             ])->withInput();
         }
 
@@ -103,6 +104,7 @@ class QualityDataController extends Controller
     public function show(QualityData $quality)
     {
         $quality->load('equipment');
+
         return view('quality.show', compact('quality'));
     }
 
@@ -114,6 +116,7 @@ class QualityDataController extends Controller
         $this->authorizePermission('quality.edit', 'No tienes permiso para editar datos de calidad.');
 
         $equipment = Equipment::where('is_active', true)->get();
+
         return view('quality.edit', compact('quality', 'equipment'));
     }
 
@@ -136,7 +139,7 @@ class QualityDataController extends Controller
         // Validar que aprobadas + rechazadas = total
         if (($validated['approved_units'] + $validated['rejected_units']) != $validated['total_inspected']) {
             return back()->withErrors([
-                'total_inspected' => 'La suma de unidades aprobadas y rechazadas debe ser igual al total inspeccionado.'
+                'total_inspected' => 'La suma de unidades aprobadas y rechazadas debe ser igual al total inspeccionado.',
             ])->withInput();
         }
 

@@ -15,11 +15,12 @@ class EquipmentController extends Controller
     {
         /** @var \App\Models\User $currentUser */
         $currentUser = Auth::user();
-        if (!$currentUser->hasPermission('equipment.view')) {
+        if (! $currentUser->hasPermission('equipment.view')) {
             abort(403, 'No tienes permiso para ver equipos.');
         }
 
         $equipment = Equipment::orderBy('created_at', 'desc')->get();
+
         return view('equipment.index', compact('equipment'));
     }
 
@@ -30,7 +31,7 @@ class EquipmentController extends Controller
     {
         /** @var \App\Models\User $currentUser */
         $currentUser = Auth::user();
-        if (!$currentUser->hasPermission('equipment.create')) {
+        if (! $currentUser->hasPermission('equipment.create')) {
             abort(403, 'No tienes permiso para crear equipos.');
         }
 
@@ -44,7 +45,7 @@ class EquipmentController extends Controller
     {
         /** @var \App\Models\User $currentUser */
         $currentUser = Auth::user();
-        if (!$currentUser->hasPermission('equipment.create')) {
+        if (! $currentUser->hasPermission('equipment.create')) {
             abort(403, 'No tienes permiso para crear equipos.');
         }
 
@@ -71,7 +72,7 @@ class EquipmentController extends Controller
     {
         /** @var \App\Models\User $currentUser */
         $currentUser = Auth::user();
-        if (!$currentUser->hasPermission('equipment.edit')) {
+        if (! $currentUser->hasPermission('equipment.edit')) {
             abort(403, 'No tienes permiso para editar equipos.');
         }
 
@@ -85,12 +86,12 @@ class EquipmentController extends Controller
     {
         /** @var \App\Models\User $currentUser */
         $currentUser = Auth::user();
-        if (!$currentUser->hasPermission('equipment.edit')) {
+        if (! $currentUser->hasPermission('equipment.edit')) {
             abort(403, 'No tienes permiso para actualizar equipos.');
         }
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'required|string|max:50|unique:equipment,code,' . $equipment->id,
+            'code' => 'required|string|max:50|unique:equipment,code,'.$equipment->id,
             'type' => 'required|string|max:100',
             'location' => 'required|string|max:255',
             'is_active' => 'boolean',
@@ -111,7 +112,7 @@ class EquipmentController extends Controller
     {
         /** @var \App\Models\User $currentUser */
         $currentUser = Auth::user();
-        if (!$currentUser->hasPermission('equipment.delete')) {
+        if (! $currentUser->hasPermission('equipment.delete')) {
             abort(403, 'No tienes permiso para eliminar equipos.');
         }
 

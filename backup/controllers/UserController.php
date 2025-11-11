@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use App\Models\Role;
 use App\Models\AuditLog;
+use App\Models\Role;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -22,9 +22,9 @@ class UserController extends Controller
         // Búsqueda por nombre o email
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
@@ -52,11 +52,12 @@ class UserController extends Controller
         // Verificar permiso
         /** @var \App\Models\User $currentUser */
         $currentUser = Auth::user();
-        if (!$currentUser->hasPermission('users.create')) {
+        if (! $currentUser->hasPermission('users.create')) {
             abort(403, 'No tienes permiso para crear usuarios.');
         }
 
         $roles = Role::where('is_active', true)->get();
+
         return view('users.create', compact('roles'));
     }
 
@@ -68,7 +69,7 @@ class UserController extends Controller
         // Verificar permiso
         /** @var \App\Models\User $currentUser */
         $currentUser = Auth::user();
-        if (!$currentUser->hasPermission('users.create')) {
+        if (! $currentUser->hasPermission('users.create')) {
             abort(403, 'No tienes permiso para crear usuarios.');
         }
         $validated = $request->validate([
@@ -107,7 +108,7 @@ class UserController extends Controller
     {
         $user->load('role', 'auditLogs');
         $auditLogs = $user->auditLogs()->latest()->paginate(10);
-        
+
         return view('users.show', compact('user', 'auditLogs'));
     }
 
@@ -119,14 +120,14 @@ class UserController extends Controller
         // Verificar permiso
         /** @var \App\Models\User $currentUser */
         $currentUser = Auth::user();
-        if (!$currentUser->hasPermission('users.edit')) {
+        if (! $currentUser->hasPermission('users.edit')) {
             abort(403, 'No tienes permiso para editar usuarios.');
         }
 
         $roles = Role::where('is_active', true)->get();
         $permissions = \App\Models\Permission::all()->groupBy('module');
         $userPermissions = $user->customPermissions->pluck('id')->toArray();
-        
+
         return view('users.edit', compact('user', 'roles', 'permissions', 'userPermissions'));
     }
 
@@ -138,13 +139,13 @@ class UserController extends Controller
         // Verificar permiso
         /** @var \App\Models\User $currentUser */
         $currentUser = Auth::user();
-        if (!$currentUser->hasPermission('users.edit')) {
+        if (! $currentUser->hasPermission('users.edit')) {
             abort(403, 'No tienes permiso para actualizar usuarios.');
         }
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
             'password' => ['nullable', 'confirmed', Password::min(8)],
             'role_id' => 'required|exists:roles,id',
             'phone' => 'nullable|string|max:20',
@@ -199,7 +200,7 @@ class UserController extends Controller
         // Verificar permiso
         /** @var \App\Models\User $currentUser */
         $currentUser = Auth::user();
-        if (!$currentUser->hasPermission('users.delete')) {
+        if (! $currentUser->hasPermission('users.delete')) {
             abort(403, 'No tienes permiso para eliminar usuarios.');
         }
 
@@ -237,12 +238,12 @@ class UserController extends Controller
         if ($user->id === Auth::id()) {
             return response()->json([
                 'success' => false,
-                'message' => 'No puedes desactivar tu propio usuario.'
+                'message' => 'No puedes desactivar tu propio usuario.',
             ], 400);
         }
 
         $oldStatus = $user->is_active;
-        $user->is_active = !$user->is_active;
+        $user->is_active = ! $user->is_active;
         $user->save();
 
         // Registrar en auditoría
@@ -258,7 +259,7 @@ class UserController extends Controller
         return response()->json([
             'success' => true,
             'is_active' => $user->is_active,
-            'message' => $user->is_active ? 'Usuario activado' : 'Usuario desactivado'
+            'message' => $user->is_active ? 'Usuario activado' : 'Usuario desactivado',
         ]);
     }
 }

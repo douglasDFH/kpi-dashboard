@@ -77,7 +77,7 @@ class EquipmentController extends Controller
 
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
-            'code' => 'sometimes|string|unique:equipment,code,' . $id,
+            'code' => 'sometimes|string|unique:equipment,code,'.$id,
             'type' => 'nullable|string|max:255',
             'location' => 'nullable|string|max:255',
             'is_active' => 'boolean',

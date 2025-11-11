@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ProductionPlan;
 use App\Models\Equipment;
+use App\Models\ProductionPlan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -43,6 +43,7 @@ class ProductionPlanController extends Controller
     public function create()
     {
         $equipment = Equipment::where('is_active', true)->get();
+
         return view('production-plans.create', compact('equipment'));
     }
 
@@ -78,6 +79,7 @@ class ProductionPlanController extends Controller
     {
         $productionPlan->load(['equipment', 'creator', 'workShifts.operator']);
         $plan = $productionPlan; // Alias for view compatibility
+
         return view('production-plans.show', compact('plan'));
     }
 
@@ -93,6 +95,7 @@ class ProductionPlanController extends Controller
         }
 
         $equipment = Equipment::where('is_active', true)->get();
+
         return view('production-plans.edit', compact('productionPlan', 'equipment'));
     }
 
@@ -189,4 +192,3 @@ class ProductionPlanController extends Controller
             ->with('success', 'Plan de producción cancelado.');
     }
 }
-

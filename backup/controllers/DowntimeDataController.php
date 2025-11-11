@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ProductionDataUpdated;
+use App\Http\Controllers\Traits\AuthorizesPermissions;
 use App\Models\DowntimeData;
 use App\Models\Equipment;
-use App\Events\ProductionDataUpdated;
-use Illuminate\Http\Request;
 use Carbon\Carbon;
-use App\Http\Controllers\Traits\AuthorizesPermissions;
+use Illuminate\Http\Request;
 
 class DowntimeDataController extends Controller
 {
@@ -19,7 +19,7 @@ class DowntimeDataController extends Controller
     public function index(Request $request)
     {
         $this->authorizePermission('downtime.view', 'No tienes permiso para ver tiempos muertos.');
-        
+
         $query = DowntimeData::with('equipment');
 
         // Filter by equipment
@@ -58,6 +58,7 @@ class DowntimeDataController extends Controller
         $this->authorizePermission('downtime.create', 'No tienes permiso para crear tiempos muertos.');
 
         $equipment = Equipment::where('is_active', true)->get();
+
         return view('downtime.create', compact('equipment'));
     }
 
@@ -102,6 +103,7 @@ class DowntimeDataController extends Controller
         $this->authorizePermission('downtime.edit', 'No tienes permiso para editar tiempos muertos.');
 
         $equipment = Equipment::where('is_active', true)->get();
+
         return view('downtime.edit', compact('downtime', 'equipment'));
     }
 
