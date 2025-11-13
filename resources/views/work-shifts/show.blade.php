@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jornada #{{ $shift->id }} - KPI Dashboard</title>
+    @vite(['resources/css/app.css'])
+</head>
+<body class="bg-gray-100">
+    <div class="min-h-screen" x-data="shiftMonitor">
+        <!-- Header -->
+        <header class="bg-white shadow-md">
+            <div class="container mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <div class="flex items-center space-x-4">
+                            <h1 class="text-3xl font-bold text-gray-800">⏱️ Jornada #{{ $shift->id }}</h1>
+                            <span class="px-3 py-1 text-sm font-semibold rounded-full 
+                                {{ $shift->status == 'active' ? 'bg-blue-100 text-blue-800 animate-pulse' : '' }}
+                                {{ $shift->status == 'completed' ? 'bg-green-100 text-green-800' : '' }}
+                                {{ $shift->status == 'cancelled' ? 'bg-red-100 text-red-800' : '' }}">
+                                {{ $shift->status == 'active' ? '▶️ Activo' : '' }}
+                                {{ $shift->status == 'completed' ? '✅ Completado' : '' }}
+                                {{ $shift->status == 'cancelled' ? '❌ Cancelado' : '' }}
+                            </span>
+                        </div>
+                        <p class="text-gray-600 mt-1">{{ $shift->equipment->name }}</p>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <a href="{{ route('work-shifts.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition">
+                            <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                            </svg>
+                            Volver
+                        </a>
+
+                        @if($shift->status == 'active')
+                            <form method="POST" action="{{ route('work-shifts.end', $shift) }}" class="inline" onsubmit="return confirm('¿Está seguro de finalizar esta jornada?')">
+                                @csrf
+                                <button type="submit" class="inline-flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-lg transition">
+                                    <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Finalizar Jornada
+                                </button>
+                            </form>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="container mx-auto px-6 py-8">
+            <!-- Alerts -->
+            <div x-show="alert.show" 
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 transform scale-90"
+                 x-transition:enter-end="opacity-100 transform scale-100"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 :class="alert.type === 'success' ? 'bg-green-100 border-green-400 text-green-700' : 'bg-red-100 border-red-400 text-red-700'"
+                 class="border px-4 py-3 rounded mb-4">
+                <p x-text="alert.message"></p>
+            </div>
+
+            <!-- Real-time Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                <!-- Production Counter -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Producción Real</p>
+                            <p class="text-3xl font-bold text-gray-900" x-text="actualProduction"></p>
+                            <p class="text-xs text-gray-500 mt-1">
+                                Meta: <span x-text="targetQuantity"></span> unidades
+                            </p>
+                        </div>
+                        <div class="p-3 bg-blue-100 rounded-full">
+                            <svg class="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Efficiency -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Eficiencia de Producción</p>
+                            <p class="text-3xl font-bold" 
+                               :class="{
+                                   'text-green-600': productionEfficiency >= 100,
+                                   'text-blue-600': productionEfficiency >= 90 && productionEfficiency < 100,
+                                   'text-yellow-600': productionEfficiency >= 75 && productionEfficiency < 90,
+                                   'text-red-600': productionEfficiency < 75
+                               }"
+                               x-text="productionEfficiency.toFixed(1) + '%'"></p>
+                            <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                                <div class="h-2 rounded-full transition-all duration-500" 
+                                     :class="{
+                                         'bg-green-600': productionEfficiency >= 100,
+                                         'bg-blue-600': productionEfficiency >= 90 && productionEfficiency < 100,
+                                         'bg-yellow-600': productionEfficiency >= 75 && productionEfficiency < 90,
+                                         'bg-red-600': productionEfficiency < 75
+                                     }"
+                                     :style="`width: ${Math.min(100, productionEfficiency)}%`"></div>
+                            </div>
+                        </div>
+                        <div class="p-3 rounded-full"
+                             :class="{
+                                 'bg-green-100': productionEfficiency >= 100,
+                                 'bg-blue-100': productionEfficiency >= 90 && productionEfficiency < 100,
+                                 'bg-yellow-100': productionEfficiency >= 75 && productionEfficiency < 90,
+                                 'bg-red-100': productionEfficiency < 75
+                             }">
+                            <svg class="h-8 w-8"
+                                 :class="{
+                                     'text-green-600': productionEfficiency >= 100,
+                                     'text-blue-600': productionEfficiency >= 90 && productionEfficiency < 100,
+                                     'text-yellow-600': productionEfficiency >= 75 && productionEfficiency < 90,
+                                     'text-red-600': productionEfficiency < 75
+                                 }"
+                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quality Rate -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Tasa de Calidad</p>
+                            <p class="text-3xl font-bold" 
+                               :class="{
+                                   'text-green-600': qualityRate >= 95,
+                                   'text-yellow-600': qualityRate >= 90 && qualityRate < 95,
+                                   'text-red-600': qualityRate < 90
+                               }"
+                               x-text="qualityRate.toFixed(1) + '%'"></p>
+                            <p class="text-xs text-gray-500 mt-1">
+                                ✅ <span x-text="goodUnits"></span> buenas
+                            </p>
+                        </div>
+                        <div class="p-3 rounded-full"
+                             :class="{
+                                 'bg-green-100': qualityRate >= 95,
+                                 'bg-yellow-100': qualityRate >= 90 && qualityRate < 95,
+                                 'bg-red-100': qualityRate < 90
+                             }">
+                            <svg class="h-8 w-8"
+                                 :class="{
+                                     'text-green-600': qualityRate >= 95,
+                                     'text-yellow-600': qualityRate >= 90 && qualityRate < 95,
+                                     'text-red-600': qualityRate < 90
+                                 }"
+                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Defect Rate -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Tasa de Defectos</p>
+                            <p class="text-3xl font-bold" 
+                               :class="{
+                                   'text-green-600': defectRate < 5,
+                                   'text-yellow-600': defectRate >= 5 && defectRate < 10,
+                                   'text-red-600': defectRate >= 10
+                               }"
+                               x-text="defectRate.toFixed(1) + '%'"></p>
+                            <p class="text-xs text-gray-500 mt-1">
+                                ❌ <span x-text="defectiveUnits"></span> defectuosas
+                            </p>
+                        </div>
+                        <div class="p-3 rounded-full"
+                             :class="{
+                                 'bg-green-100': defectRate < 5,
+                                 'bg-yellow-100': defectRate >= 5 && defectRate < 10,
+                                 'bg-red-100': defectRate >= 10
+                             }">
+                            <svg class="h-8 w-8"
+                                 :class="{
+                                     'text-green-600': defectRate < 5,
+                                     'text-yellow-600': defectRate >= 5 && defectRate < 10,
+                                     'text-red-600': defectRate >= 10
+                                 }"
+                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Shift Details -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- Info Card -->
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4">Información de la Jornada</h2>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-sm text-gray-600">Equipo</p>
+                                <p class="text-lg font-semibold">{{ $shift->equipment->name }}</p>
+                                <p class="text-sm text-gray-500">{{ $shift->equipment->code }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Turno</p>
+                                <p class="text-lg font-semibold">
+                                    {{ $shift->shift_type == 'morning' ? '🌅 Mañana' : '' }}
+                                    {{ $shift->shift_type == 'afternoon' ? '☀️ Tarde' : '' }}
+                                    {{ $shift->shift_type == 'night' ? '🌙 Noche' : '' }}
+                                </p>
+                            </div>
+                            @if($shift->plan)
+                                <div>
+                                    <p class="text-sm text-gray-600">Plan de Producción</p>
+                                    <a href="{{ route('production-plans.show', $shift->plan) }}" class="text-lg font-semibold text-blue-600 hover:underline">
+                                        #{{ $shift->plan->id }} - {{ $shift->plan->product_name }}
+                                    </a>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">Producto</p>
+                                    <p class="text-lg font-semibold">{{ $shift->target_snapshot['product_name'] ?? 'N/A' }}</p>
+                                    @if(isset($shift->target_snapshot['product_code']))
+                                        <p class="text-sm text-gray-500">{{ $shift->target_snapshot['product_code'] }}</p>
+                                    @endif
+                                </div>
+                            @endif
+                            @if($shift->operator)
+                                <div>
+                                    <p class="text-sm text-gray-600">Operador</p>
+                                    <p class="text-lg font-semibold">{{ $shift->operator->name }}</p>
+                                </div>
+                            @endif
+                            <div>
+                                <p class="text-sm text-gray-600">Inicio</p>
+                                <p class="text-lg font-semibold">{{ $shift->start_time->format('d/m/Y H:i') }}</p>
+                            </div>
+                            @if($shift->end_time)
+                                <div>
+                                    <p class="text-sm text-gray-600">Fin</p>
+                                    <p class="text-lg font-semibold">{{ $shift->end_time->format('d/m/Y H:i') }}</p>
+                                </div>
+                            @endif
+                        </div>
+
+                        @if($shift->notes)
+                            <div class="mt-4 pt-4 border-t">
+                                <p class="text-sm text-gray-600 mb-2">Notas</p>
+                                <p class="text-gray-800">{{ $shift->notes }}</p>
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Production Chart -->
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4">Progreso de Producción</h2>
+                        
+                        <!-- Debug Info (solo visible si hay problemas) -->
+                        <div id="chartDebug" class="hidden mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                            <p class="text-sm text-yellow-800">
+                                <strong>⚠️ Información de depuración:</strong>
+                                <br>Presiona F12 para ver la consola del navegador.
+                            </p>
+                        </div>
+                        
+                        <canvas id="productionChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Production Recording (Only for Active Shifts) -->
+                @if($shift->status == 'active' || $shift->status == 'pending_registration')
+                    <div class="lg:col-span-1">
+                        <div class="bg-white rounded-lg shadow-md p-6 sticky top-6">
+                            @if($shift->status == 'pending_registration')
+                                <div class="mb-4 p-4 bg-green-50 border-l-4 border-green-500 rounded">
+                                    <div class="flex">
+                                        <div class="flex-shrink-0">
+                                            <svg class="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                            </svg>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-sm font-medium text-green-800">
+                                                ✅ Producción completada al 100%
+                                            </p>
+                                            <p class="text-xs text-green-700 mt-1">
+                                                Los datos se han cargado automáticamente. Solo haz clic en "Registrar" para finalizar.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                            
+                            <h2 class="text-xl font-bold text-gray-800 mb-4">
+                                @if($shift->status == 'pending_registration')
+                                    ✅ Confirmar Producción
+                                @else
+                                    📊 Registrar Producción
+                                @endif
+                            </h2>
+                            
+                            <form @submit.prevent="recordProduction" class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        Cantidad Total <span class="text-red-500">*</span>
+                                    </label>
+                                    <input 
+                                        type="number" 
+                                        x-model="form.quantity"
+                                        min="1"
+                                        @if($shift->status == 'pending_registration') readonly @endif
+                                        class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 @if($shift->status == 'pending_registration') bg-gray-100 @endif"
+                                        placeholder="100"
+                                        required>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        Unidades Buenas <span class="text-red-500">*</span>
+                                    </label>
+                                    <input 
+                                        type="number" 
+                                        x-model="form.good_units"
+                                        @input="form.defective_units = Math.max(0, form.quantity - form.good_units)"
+                                        min="0"
+                                        :max="form.quantity"
+                                        @if($shift->status == 'pending_registration') readonly @endif
+                                        class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 @if($shift->status == 'pending_registration') bg-gray-100 @endif"
+                                        placeholder="95"
+                                        required>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        Unidades Defectuosas <span class="text-red-500">*</span>
+                                    </label>
+                                    <input 
+                                        type="number" 
+                                        x-model="form.defective_units"
+                                        @input="form.good_units = Math.max(0, form.quantity - form.defective_units)"
+                                        min="0"
+                                        :max="form.quantity"
+                                        @if($shift->status == 'pending_registration') readonly @endif
+                                        class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 @if($shift->status == 'pending_registration') bg-gray-100 @endif"
+                                        placeholder="5"
+                                        required>
+                                </div>
+
+                                <div class="p-3 rounded-lg" :class="isFormValid ? 'bg-green-50' : 'bg-gray-50'">
+                                    <p class="text-xs" :class="isFormValid ? 'text-green-700' : 'text-gray-600'">
+                                        <strong>Validación:</strong><br>
+                                        Total = Buenas + Defectuosas<br>
+                                        <span x-text="form.quantity"></span> = 
+                                        <span x-text="form.good_units"></span> + 
+                                        <span x-text="form.defective_units"></span>
+                                        <span x-show="!isFormValid" class="text-red-600 block mt-1">
+                                            ⚠️ Los valores no coinciden
+                                        </span>
+                                        <span x-show="isFormValid" class="text-green-600 block mt-1">
+                                            ✅ Los valores son correctos
+                                        </span>
+                                    </p>
+                                </div>
+
+                                <button 
+                                    type="submit" 
+                                    :disabled="(!isFormValid || submitting) && !registered"
+                                    :class="{
+                                        'bg-green-500 hover:bg-green-600': !registered,
+                                        'bg-red-500 hover:bg-red-600': registered,
+                                        'bg-gray-300': !isFormValid || submitting
+                                    }"
+                                    class="w-full px-4 py-3 text-white font-medium rounded-lg transition">
+                                    <span x-show="!submitting && !registered">✅ Registrar Producción</span>
+                                    <span x-show="registered" class="flex items-center justify-center">
+                                        <svg class="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                        </svg>
+                                        ✅ Registrado
+                                    </span>
+                                    <span x-show="submitting" class="flex items-center justify-center">
+                                        <svg class="animate-spin h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Registrando...
+                                    </span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                @else
+                    <div class="lg:col-span-1">
+                        <div class="bg-white rounded-lg shadow-md p-6">
+                            <h2 class="text-xl font-bold text-gray-800 mb-4">📊 Métricas Finales</h2>
+                            <div class="space-y-4">
+                                <div class="flex justify-center">
+                                    <canvas id="qualityChart" width="200" height="200"></canvas>
+                                </div>
+                                <div class="text-center pt-4 border-t">
+                                    <p class="text-sm text-gray-600">Estado Final</p>
+                                    <p class="text-lg font-bold text-green-600">✅ Completada</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+            </div>
+        </main>
+    </div>
+
+    <!-- Chart.js desde CDN - PRIMERO -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <!-- Alpine.js en modo MANUAL - SEGUNDO -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js" defer></script>
+    
+    <!-- Laravel Echo y Pusher - TERCERO -->
+    @vite(['resources/js/app.js'])
+
+    <script>
+        // Debug: Verificar que Chart.js esté disponible
+        console.log('🔍 Verificando dependencias:');
+        console.log('Chart.js disponible:', typeof Chart !== 'undefined');
+        
+        // Debug: Mostrar datos del shift
+        console.log('📊 Datos del shift:', {
+            id: {{ $shift->id }},
+            status: '{{ $shift->status }}',
+            plan_id: {{ $shift->plan_id ?? 'null' }},
+            actualProduction: {{ $shift->actual_production }},
+            targetQuantity: {{ $shift->target_snapshot['target_quantity'] ?? 0 }},
+            target_snapshot: @json($shift->target_snapshot)
+        });
+
+        // Esperar a que Alpine esté completamente listo
+        document.addEventListener('alpine:init', () => {
+            console.log('✅ Alpine.js inicializado correctamente');
+            
+            Alpine.data('shiftMonitor', () => ({
+                // State
+                actualProduction: {{ $shift->actual_production }},
+                goodUnits: {{ $shift->good_units }},
+                defectiveUnits: {{ $shift->defective_units }},
+                targetQuantity: {{ $shift->target_snapshot['target_quantity'] ?? 0 }},
+                startTime: new Date('{{ $shift->start_time->toIso8601String() }}'),
+                shiftType: '{{ $shift->shift_type }}',
+                
+                // Form
+                form: {
+                    quantity: {{ $shift->status == 'pending_registration' ? $shift->actual_production : 0 }},
+                    good_units: {{ $shift->status == 'pending_registration' ? $shift->good_units : 0 }},
+                    defective_units: {{ $shift->status == 'pending_registration' ? $shift->defective_units : 0 }}
+                },
+                submitting: false,
+                registered: false,
+                
+                // Alert
+                alert: {
+                    show: false,
+                    type: 'success',
+                    message: ''
+                },
+
+                // Charts
+                productionChart: null,
+                qualityChart: null,
+
+                // Computed
+                get progress() {
+                    return this.targetQuantity > 0 
+                        ? Math.min(100, (this.actualProduction / this.targetQuantity) * 100) 
+                        : 0;
+                },
+
+                get productionEfficiency() {
+                    return this.targetQuantity > 0 
+                        ? (this.actualProduction / this.targetQuantity) * 100 
+                        : 0;
+                },
+
+                get qualityRate() {
+                    return this.actualProduction > 0 
+                        ? (this.goodUnits / this.actualProduction) * 100 
+                        : 100;
+                },
+
+                get defectRate() {
+                    return this.actualProduction > 0 
+                        ? (this.defectiveUnits / this.actualProduction) * 100 
+                        : 0;
+                },
+
+                get durationFormatted() {
+                    const now = new Date();
+                    const diff = Math.floor((now - this.startTime) / 1000 / 60); // minutes
+                    const hours = Math.floor(diff / 60);
+                    const minutes = diff % 60;
+                    return `${hours}h ${minutes}m`;
+                },
+
+                get shiftTimeRange() {
+                    const times = {
+                        morning: '6:00 - 14:00',
+                        afternoon: '14:00 - 22:00',
+                        night: '22:00 - 6:00'
+                    };
+                    return times[this.shiftType] || '';
+                },
+
+                get isFormValid() {
+                    return this.form.quantity > 0 && 
+                           this.form.quantity === (this.form.good_units + this.form.defective_units);
+                },
+
+                // Methods
+                init() {
+                    this.initCharts();
+                    this.startDurationUpdate();
+                    @if($shift->status == 'active')
+                        this.listenForUpdates();
+                    @endif
+                },
+
+                initCharts() {
+                    console.log('📈 Inicializando gráficos...');
+                    console.log('Valores actuales:', {
+                        actualProduction: this.actualProduction,
+                        targetQuantity: this.targetQuantity,
+                        goodUnits: this.goodUnits,
+                        defectiveUnits: this.defectiveUnits
+                    });
+
+                    // Production Progress Chart
+                    const ctxProd = document.getElementById('productionChart');
+                    
+                    if (!ctxProd) {
+                        console.error('❌ Canvas productionChart no encontrado');
+                        return;
+                    }
+                    
+                    if (typeof Chart === 'undefined') {
+                        console.error('❌ Chart.js no está disponible');
+                        return;
+                    }
+                    
+                    // IMPORTANTE: Destruir gráfico anterior si existe
+                    if (this.productionChart) {
+                        console.log('🗑️ Destruyendo gráfico anterior...');
+                        this.productionChart.destroy();
+                        this.productionChart = null;
+                    }
+                    
+                    console.log('✅ Canvas encontrado, creando gráfico...');
+                    
+                    // Capturar valores para usar en el tooltip (evitar problemas con 'this')
+                    const targetQty = this.targetQuantity;
+                    const actualProd = this.actualProduction;
+                    
+                    this.productionChart = new Chart(ctxProd, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Producción Planificada', 'Producción Real', 'Unidades Buenas', 'Unidades Defectuosas'],
+                            datasets: [{
+                                data: [
+                                    this.targetQuantity,
+                                    this.actualProduction,
+                                    this.goodUnits,
+                                    this.defectiveUnits
+                                ],
+                                backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#ef4444']
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    callbacks: {
+                                        afterLabel: (context) => {
+                                            const label = context.label;
+                                            const value = context.parsed.y;
+                                            
+                                            if (label === 'Producción Real' && targetQty > 0) {
+                                                const efficiency = ((value / targetQty) * 100).toFixed(1);
+                                                return `Eficiencia: ${efficiency}%`;
+                                            }
+                                            if (label === 'Unidades Buenas' && actualProd > 0) {
+                                                const qualityRate = ((value / actualProd) * 100).toFixed(1);
+                                                return `Tasa de Calidad: ${qualityRate}%`;
+                                            }
+                                            if (label === 'Unidades Defectuosas' && actualProd > 0) {
+                                                const defectRate = ((value / actualProd) * 100).toFixed(1);
+                                                return `Tasa de Defectos: ${defectRate}%`;
+                                            }
+                                            return '';
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: { beginAtZero: true }
+                            }
+                        }
+                    });
+
+                    // Quality Chart (only for completed shifts)
+                    @if($shift->status != 'active')
+                        const ctxQuality = document.getElementById('qualityChart');
+                        this.qualityChart = new Chart(ctxQuality, {
+                            type: 'doughnut',
+                            data: {
+                                labels: ['Buenas', 'Defectuosas'],
+                                datasets: [{
+                                    data: [this.goodUnits, this.defectiveUnits],
+                                    backgroundColor: ['#10b981', '#ef4444']
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: true,
+                                cutout: '70%'
+                            }
+                        });
+                    @endif
+                },
+
+                async recordProduction() {
+                    // Prevenir múltiples submissions
+                    if (this.submitting || this.registered) {
+                        console.log('⚠️ Ya hay una submission en proceso o ya está registrado');
+                        return;
+                    }
+
+                    if (!this.isFormValid) {
+                        console.log('⚠️ Formulario no válido');
+                        return;
+                    }
+
+                    console.log('📤 Enviando registro de producción...');
+                    console.log('📋 Datos del formulario:', {
+                        quantity: this.form.quantity,
+                        good_units: this.form.good_units,
+                        defective_units: this.form.defective_units,
+                        suma: this.form.good_units + this.form.defective_units
+                    });
+                    
+                    this.submitting = true;
+
+                    try {
+                        console.log('🌐 Realizando fetch...');
+                        const response = await fetch('{{ route('work-shifts.record-production', $shift) }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify(this.form)
+                        });
+
+                        console.log('📥 Respuesta recibida, status:', response.status);
+
+                        if (!response.ok) {
+                            const errorText = await response.text();
+                            console.error('❌ Error del servidor:', errorText);
+                            throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
+                        }
+
+                        const data = await response.json();
+                        console.log('✅ Respuesta recibida:', data);
+
+                        if (data.success) {
+                            // Update state
+                            this.actualProduction = data.data.actual_production;
+                            this.goodUnits = data.data.good_units;
+                            this.defectiveUnits = data.data.defective_units;
+
+                            // Cambiar botón a rojo (registrado)
+                            this.registered = true;
+
+                            // Update chart si existe - CON PROTECCIÓN CONTRA RECURSIÓN
+                            if (this.productionChart && typeof this.productionChart.update === 'function') {
+                                try {
+                                    this.productionChart.data.datasets[0].data = [
+                                        this.targetQuantity,
+                                        this.actualProduction,
+                                        this.goodUnits,
+                                        this.defectiveUnits
+                                    ];
+                                    this.productionChart.update('none'); // Sin animación para evitar recursión
+                                } catch (chartError) {
+                                    console.warn('⚠️ Error actualizando gráfico:', chartError);
+                                    // Destruir y reinicializar gráfico si falla
+                                    this.productionChart.destroy();
+                                    this.productionChart = null;
+                                    setTimeout(() => this.initCharts(), 100);
+                                }
+                            }
+
+                            // Si la jornada fue completada, redirigir INMEDIATAMENTE
+                            if (data.data.status === 'completed') {
+                                console.log('🎉 Jornada completada, redirigiendo inmediatamente...');
+                                
+                                // Mostrar mensaje de éxito brevemente
+                                this.showAlert('success', data.message);
+                                
+                                // Redirigir inmediatamente sin esperar
+                                setTimeout(() => {
+                                    window.location.href = '{{ route("work-shifts.index") }}';
+                                }, 500); // Solo 0.5 segundos para ver el mensaje
+                            } else {
+                                // Mostrar alerta de éxito
+                                this.showAlert('success', data.message);
+                                
+                                // Reset form para registro manual continuo
+                                this.form = { quantity: 0, good_units: 0, defective_units: 0 };
+                            }
+                        } else {
+                            console.error('❌ Error en la respuesta:', data);
+                            this.showAlert('error', data.message || 'Error al registrar producción');
+                        }
+                    } catch (error) {
+                        console.error('❌ Error al registrar producción:', error);
+                        
+                        // Mostrar mensaje de error más específico
+                        let errorMessage = 'Error al registrar la producción. ';
+                        
+                        if (error.name === 'TypeError' || error.message.includes('fetch')) {
+                            errorMessage += 'Verifica tu conexión.';
+                        } else if (error.message.includes('RangeError') || error.message.includes('Maximum call stack')) {
+                            errorMessage += 'Error interno. Por favor recarga la página manualmente.';
+                        } else {
+                            errorMessage += error.message || 'Error desconocido';
+                        }
+                        
+                        this.showAlert('error', errorMessage);
+                    } finally {
+                        this.submitting = false;
+                    }
+                },
+
+                showAlert(type, message) {
+                    this.alert = { show: true, type, message };
+                    setTimeout(() => {
+                        this.alert.show = false;
+                    }, 5000);
+                },
+
+                startDurationUpdate() {
+                    setInterval(() => {
+                        // Force update duration display
+                        this.$nextTick();
+                    }, 60000); // Update every minute
+                },
+
+                listenForUpdates() {
+                    console.log('👂 Escuchando actualizaciones en tiempo real...');
+                    
+                    window.Echo.channel('work-shift.{{ $shift->id }}')
+                        .listen('.production.updated', (e) => {
+                            console.log('📡 Actualización recibida:', e);
+                            
+                            // Actualizar datos
+                            this.actualProduction = e.actual_production;
+                            this.goodUnits = e.good_units;
+                            this.defectiveUnits = e.defective_units;
+                            
+                            // Actualizar gráfico - CON PROTECCIÓN
+                            if (this.productionChart && typeof this.productionChart.update === 'function') {
+                                try {
+                                    this.productionChart.data.datasets[0].data = [
+                                        this.targetQuantity,
+                                        this.actualProduction,
+                                        this.goodUnits,
+                                        this.defectiveUnits
+                                    ];
+                                    this.productionChart.update('none'); // Sin animación
+                                } catch (error) {
+                                    console.warn('⚠️ Error actualizando gráfico en tiempo real:', error);
+                                }
+                            }
+                            
+                            // Si llegó a pending_registration, redirigir directamente
+                            if (e.status === 'pending_registration') {
+                                console.log('✅ Producción completada al 100% - Redirigiendo...');
+                                
+                                // Redirigir inmediatamente sin recargar
+                                window.location.href = '{{ route("work-shifts.show", $shift->id) }}';
+                            }
+                        });
+                }
+            }));
+        });
+    </script>
+</body>
+</html>

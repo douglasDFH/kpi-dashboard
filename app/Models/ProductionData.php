@@ -9,6 +9,8 @@ class ProductionData extends Model
 {
     protected $fillable = [
         'equipment_id',
+        'plan_id',
+        'work_shift_id',
         'planned_production',
         'actual_production',
         'good_units',
@@ -25,6 +27,16 @@ class ProductionData extends Model
     public function equipment(): BelongsTo
     {
         return $this->belongsTo(Equipment::class);
+    }
+
+    public function plan(): BelongsTo
+    {
+        return $this->belongsTo(ProductionPlan::class, 'plan_id');
+    }
+
+    public function workShift(): BelongsTo
+    {
+        return $this->belongsTo(WorkShift::class, 'work_shift_id');
     }
 
     // Calcula la eficiencia de producción

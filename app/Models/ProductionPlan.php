@@ -22,8 +22,8 @@ class ProductionPlan extends Model
     ];
 
     protected $casts = [
-        'start_date' => 'date',
-        'end_date' => 'date',
+        'start_date' => 'datetime',
+        'end_date' => 'datetime',
         'target_quantity' => 'integer',
     ];
 

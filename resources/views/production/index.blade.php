@@ -169,6 +169,7 @@
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Equipo</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Plan/Jornada</th>
                             <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Planificado</th>
                             <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Producido</th>
                             <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Buenas</th>
@@ -186,6 +187,21 @@
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm font-medium text-gray-900">{{ $data->equipment->name }}</div>
                                     <div class="text-xs text-gray-500">{{ $data->equipment->code }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    @if($data->plan)
+                                        <a href="{{ route('production-plans.show', $data->plan) }}" class="text-blue-600 hover:text-blue-800 hover:underline">
+                                            <div class="font-medium">📋 {{ $data->plan->product_name }}</div>
+                                            <div class="text-xs text-gray-500">Plan #{{ $data->plan->id }}</div>
+                                        </a>
+                                    @elseif($data->workShift)
+                                        <a href="{{ route('work-shifts.show', $data->workShift) }}" class="text-purple-600 hover:text-purple-800 hover:underline">
+                                            <div class="font-medium">⏱️ Jornada #{{ $data->workShift->id }}</div>
+                                            <div class="text-xs text-gray-500">{{ ucfirst($data->workShift->shift_type) }}</div>
+                                        </a>
+                                    @else
+                                        <span class="text-gray-400 text-xs">Manual</span>
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
                                     {{ number_format($data->planned_production) }}

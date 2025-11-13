@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\WorkShift;
 use App\Models\Equipment;
 use App\Models\ProductionPlan;
+use App\Jobs\SimulateProduction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class WorkShiftController extends Controller
 {
@@ -44,12 +46,13 @@ class WorkShiftController extends Controller
     public function create()
     {
         $equipment = Equipment::where('is_active', true)->get();
-        $activePlans = ProductionPlan::where('status', 'active')
-            ->orWhere('status', 'pending')
+        $plans = ProductionPlan::whereIn('status', ['active', 'pending'])
             ->with('equipment')
             ->get();
+        $operators = \App\Models\User::all();
+        $activeShifts = WorkShift::where('status', 'active')->get();
 
-        return view('work-shifts.create', compact('equipment', 'activePlans'));
+        return view('work-shifts.create', compact('equipment', 'plans', 'operators', 'activeShifts'));
     }
 
     /**
@@ -61,6 +64,7 @@ class WorkShiftController extends Controller
             'equipment_id' => 'required|exists:equipment,id',
             'plan_id' => 'nullable|exists:production_plans,id',
             'shift_type' => 'required|in:morning,afternoon,night',
+            'operator_id' => 'nullable|exists:users,id',
             'notes' => 'nullable|string',
         ]);
 
@@ -72,6 +76,7 @@ class WorkShiftController extends Controller
 
         if ($activeShift) {
             return redirect()->back()
+                ->withInput()
                 ->with('error', 'Ya existe una jornada activa para este equipo. Debe finalizarla primero.');
         }
 
@@ -79,15 +84,18 @@ class WorkShiftController extends Controller
             $validated['equipment_id'],
             $validated['plan_id'] ?? null,
             $validated['shift_type'],
-            Auth::id()
+            $validated['operator_id'] ?? Auth::id()
         );
 
         if (isset($validated['notes'])) {
             $shift->update(['notes' => $validated['notes']]);
         }
 
+        // Iniciar simulación de producción automática
+        dispatch(new SimulateProduction($shift))->delay(now()->addSeconds(5));
+
         return redirect()->route('work-shifts.show', $shift)
-            ->with('success', 'Jornada de trabajo iniciada exitosamente.');
+            ->with('success', 'Jornada de trabajo iniciada exitosamente. La producción comenzará automáticamente.');
     }
 
     /**
@@ -96,7 +104,8 @@ class WorkShiftController extends Controller
     public function show(WorkShift $workShift)
     {
         $workShift->load(['equipment', 'plan', 'operator']);
-        return view('work-shifts.show', compact('workShift'));
+        $shift = $workShift; // Alias for view compatibility
+        return view('work-shifts.show', compact('shift'));
     }
 
     /**
@@ -109,10 +118,11 @@ class WorkShiftController extends Controller
                 ->with('error', 'Esta jornada ya ha sido finalizada.');
         }
 
+        // Finalizar la jornada (crea ProductionData automáticamente en el modelo)
         $workShift->endShift();
 
         return redirect()->route('work-shifts.show', $workShift)
-            ->with('success', 'Jornada de trabajo finalizada exitosamente.');
+            ->with('success', 'Jornada finalizada y datos de producción registrados exitosamente.');
     }
 
     /**
@@ -120,26 +130,58 @@ class WorkShiftController extends Controller
      */
     public function recordProduction(Request $request, WorkShift $workShift)
     {
-        if ($workShift->status !== 'active') {
+        // LOG: Datos recibidos
+        \Log::info('📥 recordProduction - Datos recibidos:', [
+            'shift_id' => $workShift->id,
+            'shift_status' => $workShift->status,
+            'request_data' => $request->all(),
+        ]);
+
+        // Permitir tanto 'active' como 'pending_registration'
+        if (!in_array($workShift->status, ['active', 'pending_registration'])) {
+            \Log::error('❌ Status inválido:', ['status' => $workShift->status]);
             return response()->json([
                 'success' => false,
-                'message' => 'Esta jornada no está activa.'
+                'message' => 'Esta jornada no está disponible para registrar producción.'
             ], 400);
         }
 
-        $validated = $request->validate([
-            'quantity' => 'required|integer|min:1',
-            'good_units' => 'required|integer|min:0',
-            'defective_units' => 'required|integer|min:0',
-        ]);
+        try {
+            $validated = $request->validate([
+                'quantity' => 'required|integer|min:1',
+                'good_units' => 'required|integer|min:0',
+                'defective_units' => 'required|integer|min:0',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('❌ Error de validación:', [
+                'errors' => $e->errors(),
+                'input' => $request->all()
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Datos inválidos: ' . json_encode($e->errors())
+            ], 400);
+        }
 
         // Validar que quantity = good_units + defective_units
         if ($validated['quantity'] != ($validated['good_units'] + $validated['defective_units'])) {
+            \Log::error('❌ Suma incorrecta:', [
+                'quantity' => $validated['quantity'],
+                'good_units' => $validated['good_units'],
+                'defective_units' => $validated['defective_units'],
+                'suma' => $validated['good_units'] + $validated['defective_units']
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'La cantidad total debe ser igual a la suma de unidades buenas y defectuosas.'
             ], 400);
         }
+
+        \Log::info('✅ Validación exitosa, registrando producción...');
+
+        // Guardar el status anterior para decidir si finalizar
+        $wasActive = $workShift->status === 'active';
+        $wasPendingRegistration = $workShift->status === 'pending_registration';
 
         $workShift->recordProduction(
             $validated['quantity'],
@@ -147,15 +189,33 @@ class WorkShiftController extends Controller
             $validated['defective_units']
         );
 
+        \Log::info('✅ Producción registrada, estado actual:', [
+            'status' => $workShift->status,
+            'actual_production' => $workShift->actual_production,
+            'wasActive' => $wasActive,
+            'wasPendingRegistration' => $wasPendingRegistration
+        ]);
+
+        // SOLO finalizar si estaba en pending_registration
+        // (El usuario está confirmando la producción final)
+        if ($wasPendingRegistration) {
+            \Log::info('🏁 Finalizando jornada manualmente por confirmación del usuario...');
+            $workShift->endShift();
+            \Log::info('✅ Jornada finalizada, status:', ['status' => $workShift->status]);
+        }
+
         return response()->json([
             'success' => true,
-            'message' => 'Producción registrada exitosamente.',
+            'message' => $workShift->status === 'completed' 
+                ? 'Producción registrada y jornada finalizada exitosamente.' 
+                : 'Producción registrada exitosamente.',
             'data' => [
                 'actual_production' => $workShift->actual_production,
                 'good_units' => $workShift->good_units,
                 'defective_units' => $workShift->defective_units,
                 'progress' => $workShift->progress,
                 'quality_rate' => $workShift->quality_rate,
+                'status' => $workShift->status,
             ]
         ]);
     }

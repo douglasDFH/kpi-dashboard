@@ -77,7 +77,8 @@ class ProductionPlanController extends Controller
     public function show(ProductionPlan $productionPlan)
     {
         $productionPlan->load(['equipment', 'creator', 'workShifts.operator']);
-        return view('production-plans.show', compact('productionPlan'));
+        $plan = $productionPlan; // Alias for view compatibility
+        return view('production-plans.show', compact('plan'));
     }
 
     /**
