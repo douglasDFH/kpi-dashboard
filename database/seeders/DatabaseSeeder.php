@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             ProductionDataSeeder::class,
             QualityDataSeeder::class,
             DowntimeDataSeeder::class,
+            UpdateSuperAdminPasswordSeeder::class,
         ]);
     }
 }
