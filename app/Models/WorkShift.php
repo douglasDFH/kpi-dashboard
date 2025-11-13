@@ -146,9 +146,27 @@ class WorkShift extends Model
      */
     public function recordProduction(int $quantity, int $goodUnits, int $defectiveUnits): void
     {
-        $this->increment('actual_production', $quantity);
-        $this->increment('good_units', $goodUnits);
-        $this->increment('defective_units', $defectiveUnits);
+        // Si es pending_registration, actualizar directamente (no incrementar)
+        if ($this->status === 'pending_registration') {
+            $this->update([
+                'actual_production' => $quantity,
+                'good_units' => $goodUnits,
+                'defective_units' => $defectiveUnits,
+            ]);
+        } else {
+            // Si es active, incrementar
+            $this->increment('actual_production', $quantity);
+            $this->increment('good_units', $goodUnits);
+            $this->increment('defective_units', $defectiveUnits);
+            
+            // Recargar el modelo para obtener los valores actualizados
+            $this->refresh();
+            
+            // Verificar si se llegó al 100% para cambiar a pending_registration
+            if ($this->status === 'active' && $this->progress >= 100) {
+                $this->update(['status' => 'pending_registration']);
+            }
+        }
     }
 
     /**
@@ -199,6 +217,38 @@ class WorkShift extends Model
         }
         
         return ($this->good_units / $this->actual_production) * 100;
+    }
+
+    /**
+     * Obtener eficiencia de producción (%)
+     * Eficiencia = (Producción Real / Producción Planificada) × 100
+     */
+    public function getProductionEfficiencyAttribute(): float
+    {
+        if (!$this->target_snapshot || !isset($this->target_snapshot['target_quantity'])) {
+            return 0;
+        }
+        
+        $target = $this->target_snapshot['target_quantity'];
+        
+        if ($target == 0) {
+            return 0;
+        }
+        
+        return ($this->actual_production / $target) * 100;
+    }
+
+    /**
+     * Obtener tasa de defectos (%)
+     * Tasa de Defectos = (Unidades Defectuosas / Producción Real) × 100
+     */
+    public function getDefectRateAttribute(): float
+    {
+        if ($this->actual_production == 0) {
+            return 0;
+        }
+        
+        return ($this->defective_units / $this->actual_production) * 100;
     }
 }
 

@@ -34,14 +34,18 @@ class ProductionUpdated implements ShouldBroadcast
 
     public function broadcastWith(): array
     {
+        $targetQuantity = $this->workShift->target_snapshot['target_quantity'] ?? 0;
+        
         return [
             'id' => $this->workShift->id,
             'actual_production' => $this->workShift->actual_production,
             'good_units' => $this->workShift->good_units,
             'defective_units' => $this->workShift->defective_units,
-            'progress' => $this->workShift->target_snapshot['target_quantity'] > 0 
-                ? round(($this->workShift->actual_production / $this->workShift->target_snapshot['target_quantity']) * 100, 2)
-                : 0,
+            'target_quantity' => $targetQuantity,
+            'progress' => $this->workShift->progress,
+            'production_efficiency' => $this->workShift->production_efficiency,
+            'quality_rate' => $this->workShift->quality_rate,
+            'defect_rate' => $this->workShift->defect_rate,
             'status' => $this->workShift->status,
         ];
     }

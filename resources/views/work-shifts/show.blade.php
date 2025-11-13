@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jornada #{{ $shift->id }} - KPI Dashboard</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <!-- Chart.js desde CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    @vite(['resources/css/app.css'])
 </head>
 <body class="bg-gray-100">
     <div class="min-h-screen" x-data="shiftMonitor">
@@ -73,10 +71,10 @@
                 <div class="bg-white rounded-lg shadow-md p-6">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-sm text-gray-600">Producción Total</p>
+                            <p class="text-sm text-gray-600">Producción Real</p>
                             <p class="text-3xl font-bold text-gray-900" x-text="actualProduction"></p>
                             <p class="text-xs text-gray-500 mt-1">
-                                de <span x-text="targetQuantity"></span> unidades
+                                Meta: <span x-text="targetQuantity"></span> unidades
                             </p>
                         </div>
                         <div class="p-3 bg-blue-100 rounded-full">
@@ -87,18 +85,45 @@
                     </div>
                 </div>
 
-                <!-- Progress -->
+                <!-- Efficiency -->
                 <div class="bg-white rounded-lg shadow-md p-6">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-sm text-gray-600">Progreso</p>
-                            <p class="text-3xl font-bold text-blue-600" x-text="progress + '%'"></p>
+                            <p class="text-sm text-gray-600">Eficiencia de Producción</p>
+                            <p class="text-3xl font-bold" 
+                               :class="{
+                                   'text-green-600': productionEfficiency >= 100,
+                                   'text-blue-600': productionEfficiency >= 90 && productionEfficiency < 100,
+                                   'text-yellow-600': productionEfficiency >= 75 && productionEfficiency < 90,
+                                   'text-red-600': productionEfficiency < 75
+                               }"
+                               x-text="productionEfficiency.toFixed(1) + '%'"></p>
                             <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
-                                <div class="bg-blue-600 h-2 rounded-full transition-all duration-500" :style="`width: ${progress}%`"></div>
+                                <div class="h-2 rounded-full transition-all duration-500" 
+                                     :class="{
+                                         'bg-green-600': productionEfficiency >= 100,
+                                         'bg-blue-600': productionEfficiency >= 90 && productionEfficiency < 100,
+                                         'bg-yellow-600': productionEfficiency >= 75 && productionEfficiency < 90,
+                                         'bg-red-600': productionEfficiency < 75
+                                     }"
+                                     :style="`width: ${Math.min(100, productionEfficiency)}%`"></div>
                             </div>
                         </div>
-                        <div class="p-3 bg-blue-100 rounded-full">
-                            <svg class="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="p-3 rounded-full"
+                             :class="{
+                                 'bg-green-100': productionEfficiency >= 100,
+                                 'bg-blue-100': productionEfficiency >= 90 && productionEfficiency < 100,
+                                 'bg-yellow-100': productionEfficiency >= 75 && productionEfficiency < 90,
+                                 'bg-red-100': productionEfficiency < 75
+                             }">
+                            <svg class="h-8 w-8"
+                                 :class="{
+                                     'text-green-600': productionEfficiency >= 100,
+                                     'text-blue-600': productionEfficiency >= 90 && productionEfficiency < 100,
+                                     'text-yellow-600': productionEfficiency >= 75 && productionEfficiency < 90,
+                                     'text-red-600': productionEfficiency < 75
+                                 }"
+                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                             </svg>
                         </div>
@@ -118,7 +143,7 @@
                                }"
                                x-text="qualityRate.toFixed(1) + '%'"></p>
                             <p class="text-xs text-gray-500 mt-1">
-                                ✅ <span x-text="goodUnits"></span> | ❌ <span x-text="defectiveUnits"></span>
+                                ✅ <span x-text="goodUnits"></span> buenas
                             </p>
                         </div>
                         <div class="p-3 rounded-full"
@@ -140,17 +165,36 @@
                     </div>
                 </div>
 
-                <!-- Duration -->
+                <!-- Defect Rate -->
                 <div class="bg-white rounded-lg shadow-md p-6">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-sm text-gray-600">Duración</p>
-                            <p class="text-3xl font-bold text-gray-900" x-text="durationFormatted"></p>
-                            <p class="text-xs text-gray-500 mt-1" x-text="shiftTimeRange"></p>
+                            <p class="text-sm text-gray-600">Tasa de Defectos</p>
+                            <p class="text-3xl font-bold" 
+                               :class="{
+                                   'text-green-600': defectRate < 5,
+                                   'text-yellow-600': defectRate >= 5 && defectRate < 10,
+                                   'text-red-600': defectRate >= 10
+                               }"
+                               x-text="defectRate.toFixed(1) + '%'"></p>
+                            <p class="text-xs text-gray-500 mt-1">
+                                ❌ <span x-text="defectiveUnits"></span> defectuosas
+                            </p>
                         </div>
-                        <div class="p-3 bg-purple-100 rounded-full">
-                            <svg class="h-8 w-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <div class="p-3 rounded-full"
+                             :class="{
+                                 'bg-green-100': defectRate < 5,
+                                 'bg-yellow-100': defectRate >= 5 && defectRate < 10,
+                                 'bg-red-100': defectRate >= 10
+                             }">
+                            <svg class="h-8 w-8"
+                                 :class="{
+                                     'text-green-600': defectRate < 5,
+                                     'text-yellow-600': defectRate >= 5 && defectRate < 10,
+                                     'text-red-600': defectRate >= 10
+                                 }"
+                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </div>
                     </div>
@@ -376,11 +420,19 @@
         </main>
     </div>
 
+    <!-- Chart.js desde CDN - PRIMERO -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <!-- Alpine.js en modo MANUAL - SEGUNDO -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js" defer></script>
+    
+    <!-- Laravel Echo y Pusher - TERCERO -->
+    @vite(['resources/js/app.js'])
+
     <script>
         // Debug: Verificar que Chart.js esté disponible
         console.log('🔍 Verificando dependencias:');
         console.log('Chart.js disponible:', typeof Chart !== 'undefined');
-        console.log('Alpine.js disponible:', typeof Alpine !== 'undefined');
         
         // Debug: Mostrar datos del shift
         console.log('📊 Datos del shift:', {
@@ -392,7 +444,10 @@
             target_snapshot: @json($shift->target_snapshot)
         });
 
+        // Esperar a que Alpine esté completamente listo
         document.addEventListener('alpine:init', () => {
+            console.log('✅ Alpine.js inicializado correctamente');
+            
             Alpine.data('shiftMonitor', () => ({
                 // State
                 actualProduction: {{ $shift->actual_production }},
@@ -429,10 +484,22 @@
                         : 0;
                 },
 
+                get productionEfficiency() {
+                    return this.targetQuantity > 0 
+                        ? (this.actualProduction / this.targetQuantity) * 100 
+                        : 0;
+                },
+
                 get qualityRate() {
                     return this.actualProduction > 0 
                         ? (this.goodUnits / this.actualProduction) * 100 
                         : 100;
+                },
+
+                get defectRate() {
+                    return this.actualProduction > 0 
+                        ? (this.defectiveUnits / this.actualProduction) * 100 
+                        : 0;
                 },
 
                 get durationFormatted() {
@@ -488,26 +555,59 @@
                         return;
                     }
                     
+                    // IMPORTANTE: Destruir gráfico anterior si existe
+                    if (this.productionChart) {
+                        console.log('🗑️ Destruyendo gráfico anterior...');
+                        this.productionChart.destroy();
+                        this.productionChart = null;
+                    }
+                    
                     console.log('✅ Canvas encontrado, creando gráfico...');
+                    
+                    // Capturar valores para usar en el tooltip (evitar problemas con 'this')
+                    const targetQty = this.targetQuantity;
+                    const actualProd = this.actualProduction;
                     
                     this.productionChart = new Chart(ctxProd, {
                         type: 'bar',
                         data: {
-                            labels: ['Producido', 'Pendiente', 'Buenas', 'Defectuosas'],
+                            labels: ['Producción Planificada', 'Producción Real', 'Unidades Buenas', 'Unidades Defectuosas'],
                             datasets: [{
                                 data: [
+                                    this.targetQuantity,
                                     this.actualProduction,
-                                    Math.max(0, this.targetQuantity - this.actualProduction),
                                     this.goodUnits,
                                     this.defectiveUnits
                                 ],
-                                backgroundColor: ['#3b82f6', '#e5e7eb', '#10b981', '#ef4444']
+                                backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#ef4444']
                             }]
                         },
                         options: {
                             responsive: true,
                             plugins: {
-                                legend: { display: false }
+                                legend: { display: false },
+                                tooltip: {
+                                    callbacks: {
+                                        afterLabel: (context) => {
+                                            const label = context.label;
+                                            const value = context.parsed.y;
+                                            
+                                            if (label === 'Producción Real' && targetQty > 0) {
+                                                const efficiency = ((value / targetQty) * 100).toFixed(1);
+                                                return `Eficiencia: ${efficiency}%`;
+                                            }
+                                            if (label === 'Unidades Buenas' && actualProd > 0) {
+                                                const qualityRate = ((value / actualProd) * 100).toFixed(1);
+                                                return `Tasa de Calidad: ${qualityRate}%`;
+                                            }
+                                            if (label === 'Unidades Defectuosas' && actualProd > 0) {
+                                                const defectRate = ((value / actualProd) * 100).toFixed(1);
+                                                return `Tasa de Defectos: ${defectRate}%`;
+                                            }
+                                            return '';
+                                        }
+                                    }
+                                }
                             },
                             scales: {
                                 y: { beginAtZero: true }
@@ -537,21 +637,49 @@
                 },
 
                 async recordProduction() {
-                    if (!this.isFormValid || this.submitting) return;
+                    // Prevenir múltiples submissions
+                    if (this.submitting || this.registered) {
+                        console.log('⚠️ Ya hay una submission en proceso o ya está registrado');
+                        return;
+                    }
 
+                    if (!this.isFormValid) {
+                        console.log('⚠️ Formulario no válido');
+                        return;
+                    }
+
+                    console.log('📤 Enviando registro de producción...');
+                    console.log('📋 Datos del formulario:', {
+                        quantity: this.form.quantity,
+                        good_units: this.form.good_units,
+                        defective_units: this.form.defective_units,
+                        suma: this.form.good_units + this.form.defective_units
+                    });
+                    
                     this.submitting = true;
 
                     try {
+                        console.log('🌐 Realizando fetch...');
                         const response = await fetch('{{ route('work-shifts.record-production', $shift) }}', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json'
                             },
                             body: JSON.stringify(this.form)
                         });
 
+                        console.log('📥 Respuesta recibida, status:', response.status);
+
+                        if (!response.ok) {
+                            const errorText = await response.text();
+                            console.error('❌ Error del servidor:', errorText);
+                            throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
+                        }
+
                         const data = await response.json();
+                        console.log('✅ Respuesta recibida:', data);
 
                         if (data.success) {
                             // Update state
@@ -562,32 +690,62 @@
                             // Cambiar botón a rojo (registrado)
                             this.registered = true;
 
-                            // Update chart
-                            this.productionChart.data.datasets[0].data = [
-                                this.actualProduction,
-                                Math.max(0, this.targetQuantity - this.actualProduction),
-                                this.goodUnits,
-                                this.defectiveUnits
-                            ];
-                            this.productionChart.update();
+                            // Update chart si existe - CON PROTECCIÓN CONTRA RECURSIÓN
+                            if (this.productionChart && typeof this.productionChart.update === 'function') {
+                                try {
+                                    this.productionChart.data.datasets[0].data = [
+                                        this.targetQuantity,
+                                        this.actualProduction,
+                                        this.goodUnits,
+                                        this.defectiveUnits
+                                    ];
+                                    this.productionChart.update('none'); // Sin animación para evitar recursión
+                                } catch (chartError) {
+                                    console.warn('⚠️ Error actualizando gráfico:', chartError);
+                                    // Destruir y reinicializar gráfico si falla
+                                    this.productionChart.destroy();
+                                    this.productionChart = null;
+                                    setTimeout(() => this.initCharts(), 100);
+                                }
+                            }
 
-                            // Show success alert
-                            this.showAlert('success', data.message);
-
-                            // Si la jornada fue completada, redirigir después de 2 segundos
+                            // Si la jornada fue completada, redirigir INMEDIATAMENTE
                             if (data.data.status === 'completed') {
+                                console.log('🎉 Jornada completada, redirigiendo inmediatamente...');
+                                
+                                // Mostrar mensaje de éxito brevemente
+                                this.showAlert('success', data.message);
+                                
+                                // Redirigir inmediatamente sin esperar
                                 setTimeout(() => {
                                     window.location.href = '{{ route("work-shifts.index") }}';
-                                }, 2000);
+                                }, 500); // Solo 0.5 segundos para ver el mensaje
                             } else {
+                                // Mostrar alerta de éxito
+                                this.showAlert('success', data.message);
+                                
                                 // Reset form para registro manual continuo
                                 this.form = { quantity: 0, good_units: 0, defective_units: 0 };
                             }
                         } else {
+                            console.error('❌ Error en la respuesta:', data);
                             this.showAlert('error', data.message || 'Error al registrar producción');
                         }
                     } catch (error) {
-                        this.showAlert('error', 'Error de conexión');
+                        console.error('❌ Error al registrar producción:', error);
+                        
+                        // Mostrar mensaje de error más específico
+                        let errorMessage = 'Error al registrar la producción. ';
+                        
+                        if (error.name === 'TypeError' || error.message.includes('fetch')) {
+                            errorMessage += 'Verifica tu conexión.';
+                        } else if (error.message.includes('RangeError') || error.message.includes('Maximum call stack')) {
+                            errorMessage += 'Error interno. Por favor recarga la página manualmente.';
+                        } else {
+                            errorMessage += error.message || 'Error desconocido';
+                        }
+                        
+                        this.showAlert('error', errorMessage);
                     } finally {
                         this.submitting = false;
                     }
@@ -619,21 +777,27 @@
                             this.goodUnits = e.good_units;
                             this.defectiveUnits = e.defective_units;
                             
-                            // Actualizar gráfico
-                            this.productionChart.data.datasets[0].data = [
-                                this.actualProduction,
-                                Math.max(0, this.targetQuantity - this.actualProduction),
-                                this.goodUnits,
-                                this.defectiveUnits
-                            ];
-                            this.productionChart.update();
+                            // Actualizar gráfico - CON PROTECCIÓN
+                            if (this.productionChart && typeof this.productionChart.update === 'function') {
+                                try {
+                                    this.productionChart.data.datasets[0].data = [
+                                        this.targetQuantity,
+                                        this.actualProduction,
+                                        this.goodUnits,
+                                        this.defectiveUnits
+                                    ];
+                                    this.productionChart.update('none'); // Sin animación
+                                } catch (error) {
+                                    console.warn('⚠️ Error actualizando gráfico en tiempo real:', error);
+                                }
+                            }
                             
-                            // Si llegó a pending_registration, recargar página para mostrar formulario prellenado
+                            // Si llegó a pending_registration, redirigir directamente
                             if (e.status === 'pending_registration') {
-                                console.log('✅ Producción completada al 100%');
-                                setTimeout(() => {
-                                    location.reload();
-                                }, 2000);
+                                console.log('✅ Producción completada al 100% - Redirigiendo...');
+                                
+                                // Redirigir inmediatamente sin recargar
+                                window.location.href = '{{ route("work-shifts.show", $shift->id) }}';
                             }
                         });
                 }

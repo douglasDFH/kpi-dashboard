@@ -68,7 +68,8 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">Estado</label>
                         <select name="status" class="w-full border-gray-300 rounded-lg">
                             <option value="">Todos los estados</option>
-                            <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Activo</option>
+                            <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>En Producción</option>
+                            <option value="pending_registration" {{ request('status') == 'pending_registration' ? 'selected' : '' }}>Pendiente Registro</option>
                             <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completado</option>
                             <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelado</option>
                         </select>
@@ -93,7 +94,7 @@
             </div>
 
             <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
                 <div class="bg-blue-50 border-l-4 border-blue-500 rounded-lg shadow p-6">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
@@ -110,8 +111,30 @@
                             </div>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm text-gray-600">Jornadas Activas</p>
+                            <p class="text-sm text-gray-600">En Producción</p>
                             <p class="text-2xl font-bold text-gray-800">{{ $shifts->where('status', 'active')->count() }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-yellow-50 border-l-4 border-yellow-500 rounded-lg shadow p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="relative">
+                                <svg class="h-8 w-8 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                @if($shifts->where('status', 'pending_registration')->count() > 0)
+                                    <span class="absolute -top-1 -right-1 flex h-3 w-3">
+                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
+                                        <span class="relative inline-flex rounded-full h-3 w-3 bg-yellow-500"></span>
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm text-gray-600">Pendiente Registro</p>
+                            <p class="text-2xl font-bold text-gray-800">{{ $shifts->where('status', 'pending_registration')->count() }}</p>
                         </div>
                     </div>
                 </div>
@@ -147,6 +170,24 @@
                 </div>
             </div>
 
+            <!-- Pending Registration Alert -->
+            @if($shifts->where('status', 'pending_registration')->count() > 0)
+                <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-4 rounded mb-6">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-yellow-500 animate-bounce" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-semibold">
+                                ⚠️ <strong>{{ $shifts->where('status', 'pending_registration')->count() }}</strong> jornada(s) completaron al 100% y necesitan registro final. Haz clic en "Ver" para confirmar.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             <!-- Active Shifts Alert -->
             @if($shifts->where('status', 'active')->count() > 0)
                 <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 rounded mb-6">
@@ -158,7 +199,7 @@
                         </div>
                         <div class="ml-3">
                             <p class="text-sm">
-                                <strong>{{ $shifts->where('status', 'active')->count() }}</strong> jornada(s) en progreso. Haz clic en "Ver" para registrar producción.
+                                <strong>{{ $shifts->where('status', 'active')->count() }}</strong> jornada(s) en progreso. Haz clic en "Ver" para monitorear en tiempo real.
                             </p>
                         </div>
                     </div>
