@@ -15,7 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('plan_maquina_id')->constrained('planes_maquina');
             $table->foreignUuid('maquina_id')->constrained('maquinas');
-            $table->foreignId('supervisor_id')->constrained('users')->onDelete('set null');
+            $table->foreignId('supervisor_id')->nullable()->constrained('users')->onDelete('set null');
             $table->enum('status', ['pending', 'running', 'paused', 'completed', 'stopped_critical'])->default('pending');
 
             // Timestamps Previsto

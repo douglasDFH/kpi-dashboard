@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('registros_mantenimiento', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('maquina_id')->constrained('maquinas');
-            $table->foreignId('supervisor_id')->constrained('users')->onDelete('set null');
+            $table->foreignId('supervisor_id')->nullable()->constrained('users')->onDelete('set null');
             $table->foreignUuid('jornada_id')->nullable()->constrained('jornadas_produccion')->onDelete('set null');
             $table->enum('tipo', ['preventivo', 'correctivo', 'calibracion']);
             $table->text('descripcion');
