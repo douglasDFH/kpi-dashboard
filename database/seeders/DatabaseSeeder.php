@@ -15,19 +15,35 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // Seed roles, permissions and users
+        $this->call([
+            RolesAndPermissionsSeeder::class,
         ]);
 
-        // Seed KPI Dashboard data
+        // Update SuperAdmin password
         $this->call([
-            EquipmentSeeder::class,
-            ProductionDataSeeder::class,
-            QualityDataSeeder::class,
-            DowntimeDataSeeder::class,
+            UpdateSuperAdminPasswordSeeder::class,
+        ]);
+
+        // Seed factory structure
+        $this->call([
+            AreaSeeder::class,
+            MaquinaSeeder::class,
+        ]);
+
+        // Seed production plans
+        $this->call([
+            PlanMaquinaSeeder::class,
+        ]);
+
+        // Seed work shifts with schedules
+        $this->call([
+            JornadaProduccionSeeder::class,
+        ]);
+
+        // Seed production data (registros se crean dinámicamente)
+        $this->call([
+            RegistroProduccionSeeder::class,
         ]);
     }
 }
